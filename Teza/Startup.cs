@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Data;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
+using Teza.Filters;
 
 namespace Teza
 {
@@ -36,7 +37,10 @@ namespace Teza
                     Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Teza"));
             });
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<ExceptionFilter>();
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Teza", Version = "v1" });

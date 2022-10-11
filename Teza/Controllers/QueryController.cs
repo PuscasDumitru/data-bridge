@@ -7,147 +7,122 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Data;
 using Data.Entities;
+using Data.Repositories.Implementation;
+using Data.Repositories.Interfaces;
+using Teza.Models;
 
 namespace Teza.Controllers
 {
-    public class QueryController : Controller
+    [ApiController]
+    [Route("api/[Controller]/[Action]")]
+    public class QueryController : ControllerBase
     {
-        private readonly RepositoryDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
         public QueryController(RepositoryDbContext context)
         {
-            _context = context;
+            _unitOfWork = new UnitOfWork(context);
         }
 
-        // GET: Query
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<ActionResult<object>> GetAllQueries()
         {
-            return View(await _context.Query.ToListAsync());
-        }
-
-        // GET: Query/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                var allQueries = await _unitOfWork.QueryRepository.GetAll().ToListAsync();
 
-            var query = await _context.Query
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (query == null)
-            {
-                return NotFound();
-            }
-
-            return View(query);
-        }
-
-        // GET: Query/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Query/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RawSql,DefaultResponseWithLimit,Description,LastExecuteTime,Count,Size")] Query query)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(query);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(query);
-        }
-
-        // GET: Query/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var query = await _context.Query.FindAsync(id);
-            if (query == null)
-            {
-                return NotFound();
-            }
-            return View(query);
-        }
-
-        // POST: Query/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,RawSql,DefaultResponseWithLimit,Description,LastExecuteTime,Count,Size")] Query query)
-        {
-            if (id != query.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                return new SuccessModel
                 {
-                    _context.Update(query);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                    Data = allQueries,
+                    Message = "Queries retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
                 {
-                    if (!QueryExists(query.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                    Error = e.Message,
+                    Success = false
+                };
             }
-            return View(query);
         }
 
-        // GET: Query/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpPost]
+        public async Task<ActionResult<object>> Create(Query query)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                _unitOfWork.QueryRepository.Create(query);
+                await _unitOfWork.SaveChangesAsync();
 
-            var query = await _context.Query
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (query == null)
+                return new SuccessModel
+                {
+                    Data = query,
+                    Message = "Query created",
+                    Success = true
+                };
+            }
+            catch (Exception e)
             {
-                return NotFound();
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
             }
-
-            return View(query);
         }
 
-        // POST: Query/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpPost]
+        public async Task<ActionResult<object>> Update(Query query)
         {
-            var query = await _context.Query.FindAsync(id);
-            _context.Query.Remove(query);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _unitOfWork.QueryRepository.Update(query);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new SuccessModel
+                {
+                    Data = query,
+                    Message = "Query updated",
+                    Success = true
+                };
+
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
         }
 
-        private bool QueryExists(int id)
+        [HttpDelete]
+        public async Task<ActionResult<object>> Delete(int id)
         {
-            return _context.Query.Any(e => e.Id == id);
+            try
+            {
+                Query query = _unitOfWork.QueryRepository.GetById(id);
+                _unitOfWork.QueryRepository.Delete(query);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new SuccessModel
+                {
+                    Data = query,
+                    Message = "Query deleted",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
         }
     }
 }

@@ -7,147 +7,122 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Data;
 using Data.Entities;
+using Data.Repositories.Implementation;
+using Data.Repositories.Interfaces;
+using Teza.Models;
 
 namespace Teza.Controllers
 {
-    public class FolderController : Controller
+    [ApiController]
+    [Route("api/[Controller]/[Action]")]
+    public class FolderController : ControllerBase
     {
-        private readonly RepositoryDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
         public FolderController(RepositoryDbContext context)
         {
-            _context = context;
+            _unitOfWork = new UnitOfWork(context);
         }
 
-        // GET: Folder
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        public async Task<ActionResult<object>> GetAllFolders()
         {
-            return View(await _context.Folder.ToListAsync());
-        }
-
-        // GET: Folder/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                var allFolders = await _unitOfWork.FolderRepository.GetAll().ToListAsync();
 
-            var folder = await _context.Folder
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (folder == null)
-            {
-                return NotFound();
-            }
-
-            return View(folder);
-        }
-
-        // GET: Folder/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Folder/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Folder folder)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(folder);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(folder);
-        }
-
-        // GET: Folder/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var folder = await _context.Folder.FindAsync(id);
-            if (folder == null)
-            {
-                return NotFound();
-            }
-            return View(folder);
-        }
-
-        // POST: Folder/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Folder folder)
-        {
-            if (id != folder.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                return new SuccessModel
                 {
-                    _context.Update(folder);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                    Data = allFolders,
+                    Message = "Folders retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
                 {
-                    if (!FolderExists(folder.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                    Error = e.Message,
+                    Success = false
+                };
             }
-            return View(folder);
         }
 
-        // GET: Folder/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpPost]
+        public async Task<ActionResult<object>> Create(Folder folder)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                _unitOfWork.FolderRepository.Create(folder);
+                await _unitOfWork.SaveChangesAsync();
 
-            var folder = await _context.Folder
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (folder == null)
+                return new SuccessModel
+                {
+                    Data = folder,
+                    Message = "Folder created",
+                    Success = true
+                };
+            }
+            catch (Exception e)
             {
-                return NotFound();
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
             }
-
-            return View(folder);
         }
 
-        // POST: Folder/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpPost]
+        public async Task<ActionResult<object>> Update(Folder folder)
         {
-            var folder = await _context.Folder.FindAsync(id);
-            _context.Folder.Remove(folder);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _unitOfWork.FolderRepository.Update(folder);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new SuccessModel
+                {
+                    Data = folder,
+                    Message = "Folder updated",
+                    Success = true
+                };
+
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
         }
 
-        private bool FolderExists(int id)
+        [HttpDelete]
+        public async Task<ActionResult<object>> Delete(int id)
         {
-            return _context.Folder.Any(e => e.Id == id);
+            try
+            {
+                Folder folder = _unitOfWork.FolderRepository.GetById(id);
+                _unitOfWork.FolderRepository.Delete(folder);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new SuccessModel
+                {
+                    Data = folder,
+                    Message = "Folder deleted",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
         }
     }
 }
