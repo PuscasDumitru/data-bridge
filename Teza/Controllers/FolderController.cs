@@ -29,7 +29,64 @@ namespace Teza.Controllers
         {
             try
             {
-                var allFolders = await _unitOfWork.FolderRepository.GetAll().ToListAsync();
+                var allFolders = await _unitOfWork.FolderRepository.GetAllFoldersAsync();
+
+                return new SuccessModel
+                {
+                    Data = allFolders,
+                    Message = "Folders retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetFolderByIdAsync(Guid folderId)
+        {
+            try
+            {
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folder is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such an ID",
+                        Success = false
+                    };
+                }
+
+                return new SuccessModel
+                {
+                    Data = folder,
+                    Message = "Folder retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetAllFoldersByCollectionIdAsync(Guid collectionId)
+        {
+            try
+            {
+                var allFolders = await _unitOfWork.FolderRepository.GetByCondition(x => x.CollectionId.Equals(collectionId)).ToListAsync();
 
                 return new SuccessModel
                 {
@@ -100,11 +157,21 @@ namespace Teza.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(Guid folderId)
         {
             try
             {
-                Folder folder = _unitOfWork.FolderRepository.GetById(id);
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folder is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such an ID",
+                        Success = false
+                    };
+                }
+
                 _unitOfWork.FolderRepository.Delete(folder);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -124,5 +191,6 @@ namespace Teza.Controllers
                 };
             }
         }
+
     }
 }

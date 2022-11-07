@@ -29,12 +29,45 @@ namespace Teza.Controllers
         {
             try
             {
-                var allHistories = await _unitOfWork.HistoryRepository.GetAll().ToListAsync();
+                var allHistories = await _unitOfWork.HistoryRepository.GetAllHistoriesAsync();
 
                 return new SuccessModel
                 {
                     Data = allHistories,
                     Message = "Histories retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetHistoryByIdAsync(Guid historyId)
+        {
+            try
+            {
+                var history = await _unitOfWork.HistoryRepository.GetHistoryByIdAsync(historyId);
+
+                if (history is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no history with such an ID",
+                        Success = false
+                    };
+                }
+
+                return new SuccessModel
+                {
+                    Data = history,
+                    Message = "History retrieved",
                     Success = true
                 };
             }
@@ -100,11 +133,21 @@ namespace Teza.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(Guid historyId)
         {
             try
             {
-                History history = _unitOfWork.HistoryRepository.GetById(id);
+                var history = await _unitOfWork.HistoryRepository.GetHistoryByIdAsync(historyId);
+
+                if (history is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no history with such an ID",
+                        Success = false
+                    };
+                }
+
                 _unitOfWork.HistoryRepository.Delete(history);
                 await _unitOfWork.SaveChangesAsync();
 

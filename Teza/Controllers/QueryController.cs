@@ -25,11 +25,68 @@ namespace Teza.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<object>> GetAllQueries()
+        public async Task<ActionResult<object>> GetAllQueriesAsync()
         {
             try
             {
-                var allQueries = await _unitOfWork.QueryRepository.GetAll().ToListAsync();
+                var allQueries = await _unitOfWork.QueryRepository.GetAllQueriesAsync();
+
+                return new SuccessModel
+                {
+                    Data = allQueries,
+                    Message = "Queries retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetQueryByIdAsync(Guid queryId)
+        {
+            try
+            {
+                var query = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
+
+                if (query is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no query with such an ID",
+                        Success = false
+                    };
+                }
+
+                return new SuccessModel
+                {
+                    Data = query,
+                    Message = "Query retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetQueriesByFolderIdAsync(Guid folderId)
+        {
+            try
+            {
+                var allQueries = await _unitOfWork.QueryRepository.GetByCondition(x => x.FolderId.Equals(folderId)).ToListAsync();
 
                 return new SuccessModel
                 {
@@ -100,11 +157,21 @@ namespace Teza.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(Guid queryId)
         {
             try
             {
-                Query query = _unitOfWork.QueryRepository.GetById(id);
+                var query = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
+
+                if (query is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no query with such an ID",
+                        Success = false
+                    };
+                }
+
                 _unitOfWork.QueryRepository.Delete(query);
                 await _unitOfWork.SaveChangesAsync();
 

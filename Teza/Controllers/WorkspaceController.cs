@@ -25,16 +25,49 @@ namespace Teza.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<object>> GetAllWorkspaces()
+        public async Task<ActionResult<object>> GetAllWorkspacesAsync()
         {
             try
             {
-                var allWorkspaces = await _unitOfWork.WorkspaceRepository.GetAll().ToListAsync();
+                var allWorkspaces = await _unitOfWork.WorkspaceRepository.GetAllWorkspacesAsync();
 
                 return new SuccessModel
                 {
                     Data = allWorkspaces,
                     Message = "Workspaces retrieved",
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<object>> GetWorkspaceByIdAsync(Guid workspaceId)
+        {
+            try
+            {
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no workspace with such an ID",
+                        Success = false
+                    };
+                }
+
+                return new SuccessModel
+                {
+                    Data = workspace,
+                    Message = "Workspace retrieved",
                     Success = true
                 };
             }
@@ -100,11 +133,21 @@ namespace Teza.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult<object>> Delete(int id)
+        public async Task<ActionResult<object>> Delete(Guid workspaceId)
         {
             try
             {
-                Workspace workspace = _unitOfWork.WorkspaceRepository.GetById(id);
+                Workspace workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no workspace with such an ID",
+                        Success = false
+                    };
+                }
+
                 _unitOfWork.WorkspaceRepository.Delete(workspace);
                 await _unitOfWork.SaveChangesAsync();
 

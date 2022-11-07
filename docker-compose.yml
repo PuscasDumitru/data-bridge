@@ -1,0 +1,33 @@
+version: '3.4'
+
+networks:
+    teza-dev:
+        driver: bridge
+
+services:
+    teza:
+        image: teza:latest
+        depends_on:
+            - "postgres_image"
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8081:80"
+        environment:
+            DB_CONNECTION_STRING: "User ID=postgres;Password=191993acces;Host=postgres_image;Port=5432;Database=MainDb;Pooling=true;Connection Lifetime=0;"
+        networks:
+            - teza-dev
+
+    postgres_image:
+        image: postgres:latest
+        ports:
+            - "5432"
+        restart: always
+        environment:
+            POSTGRES_USER: "postgres"
+            POSTGRES_PASSWORD: "191993acces"
+            POSTGRES_DB: "MainDb"
+        networks:
+            - teza-dev
+            

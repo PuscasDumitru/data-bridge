@@ -22,5 +22,6 @@ namespace Teza
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+            
     }
 }

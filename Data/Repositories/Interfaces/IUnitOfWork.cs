@@ -11,11 +11,11 @@ namespace Data.Repositories.Interfaces
 {
     public interface IUnitOfWork
     {
-        GenericRepository<Collection> CollectionRepository { get; }
-        GenericRepository<Folder> FolderRepository { get; }
-        GenericRepository<History> HistoryRepository { get; }
-        GenericRepository<Query> QueryRepository { get; }
-        GenericRepository<Workspace> WorkspaceRepository { get; }
+        CollectionRepository CollectionRepository { get; }
+        FolderRepository FolderRepository { get; }
+        HistoryRepository HistoryRepository { get; }
+        QueryRepository QueryRepository { get; }
+        WorkspaceRepository WorkspaceRepository { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -10,17 +10,18 @@ namespace Data.Entities
     {
         public Workspace()
         {
-            this.Users = new HashSet<User>();
+            this.Collections = new HashSet<Collection>();
         }
 
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         //public int UserId { get; set; }      
         public string DbConnectionString { get; set; }
         public string DefaultConfigsForQueries { get; set; }
         public string EnvVariables { get; set; }
-        public string Description { get; set; }
+        public string Documentation { get; set; }
         public int UsersLimit { get; set; }
         public string InviteLink { get; set; }
-        public virtual ICollection<User> Users { get; set; }
+        public virtual ICollection<Collection> Collections { get; set; }
+        //public ICollection<User> Users { get; set; }
     }
 }

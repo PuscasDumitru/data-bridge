@@ -9,9 +9,9 @@ namespace Data.Entities
 {
     public class History
     {
-        [ForeignKey("Query")]
+        //[ForeignKey("Query")]
         
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         //public int UserId { get; set; }
         //public int QueryId { get; set; }
         public Action Action { get; set; }

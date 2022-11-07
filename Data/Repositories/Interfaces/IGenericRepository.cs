@@ -10,7 +10,6 @@ namespace Data.Repositories.Interfaces
     public interface IGenericRepository<T>
     {
         IQueryable<T> GetAll();
-        T GetById(object id);
         IQueryable<T> GetByCondition(Expression<Func<T, bool>> expression);
         void Create(T entity);
         void Update(T entity);

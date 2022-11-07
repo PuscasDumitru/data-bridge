@@ -12,55 +12,55 @@ namespace Data.Repositories.Implementation
     public class UnitOfWork : IUnitOfWork
     {
         readonly RepositoryDbContext _dbContext;
-        GenericRepository<Collection> _collectionRepository;
-        GenericRepository<Folder> _folderRepository;
-        GenericRepository<History> _historyRepository;
-        GenericRepository<Query> _queryRepository;
-        GenericRepository<Workspace> _workspaceRepository;
+        CollectionRepository _collectionRepository;
+        FolderRepository _folderRepository;
+        HistoryRepository _historyRepository;
+        QueryRepository _queryRepository;
+        WorkspaceRepository _workspaceRepository;
 
         public UnitOfWork(RepositoryDbContext dbContext) => _dbContext = dbContext;
 
-        public GenericRepository<Collection> CollectionRepository
+        public CollectionRepository CollectionRepository
         {
             get
             {
-                _collectionRepository ??= new GenericRepository<Collection>(_dbContext);
+                _collectionRepository ??= new CollectionRepository(_dbContext);
                 return _collectionRepository;
             }
         }
 
-        public GenericRepository<Folder> FolderRepository
+        public FolderRepository FolderRepository
         {
             get
             {
-                _folderRepository ??= new GenericRepository<Folder>(_dbContext);
+                _folderRepository ??= new FolderRepository(_dbContext);
                 return _folderRepository;
             }
         }
 
-        public GenericRepository<Query> QueryRepository
+        public QueryRepository QueryRepository
         {
             get
             {
-                _queryRepository ??= new GenericRepository<Query>(_dbContext);
+                _queryRepository ??= new QueryRepository(_dbContext);
                 return _queryRepository;
             }
         }
 
-        public GenericRepository<Workspace> WorkspaceRepository
+        public WorkspaceRepository WorkspaceRepository
         {
             get
             {
-                _workspaceRepository ??= new GenericRepository<Workspace>(_dbContext);
+                _workspaceRepository ??= new WorkspaceRepository(_dbContext);
                 return _workspaceRepository;
             }
         }
 
-        public GenericRepository<History> HistoryRepository
+        public HistoryRepository HistoryRepository
         {
             get
             {
-                _historyRepository ??= new GenericRepository<History>(_dbContext);
+                _historyRepository ??= new HistoryRepository(_dbContext);
                 return _historyRepository;
             }
         }

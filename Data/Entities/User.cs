@@ -9,15 +9,11 @@ namespace Data.Entities
 {
     public class User
     {
-        public User()
-        {
-            this.Workspaces = new HashSet<Workspace>();
-        }
         // primary key from service
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Email { get; set; }
         public string HashPassword { get; set; }
-        public virtual ICollection<Workspace> Workspaces { get; set; }
-        public virtual History History { get; set; }
+        //public virtual ICollection<Workspace> Workspaces { get; set; }
+       // public virtual History History { get; set; }
     }
 }
