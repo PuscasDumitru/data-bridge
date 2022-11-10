@@ -25,7 +25,6 @@ namespace Data
         public DbSet<Collection> Collection { get; set; }
         public DbSet<Folder> Folder { get; set; }
         public DbSet<Query> Query { get; set; }
-        //public DbSet<User> User { get; set; }
         public DbSet<Workspace> Workspace { get; set; }
         public DbSet<History> History { get; set; }
     }

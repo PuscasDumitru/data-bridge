@@ -15,12 +15,14 @@ namespace Data.Repositories.Implementation
         public async Task<Folder> GetFolderByIdAsync(Guid folderId)
         {
             return await GetByCondition(folder => folder.Id.Equals(folderId))
+                .Include(q => q.Queries)
                 .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Folder>> GetAllFoldersAsync()
         {
             return await GetAll()
+                .Include(q => q.Queries)
                 .ToListAsync();
 
         }

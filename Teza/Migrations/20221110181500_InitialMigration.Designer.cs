@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    [Migration("20221107172004_InitialMigration")]
+    [Migration("20221110181500_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -146,6 +146,15 @@ namespace Teza.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("InviteLink")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Users")
                         .HasColumnType("text");
 
                     b.Property<int>("UsersLimit")

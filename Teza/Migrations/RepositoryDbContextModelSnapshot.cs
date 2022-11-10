@@ -146,6 +146,15 @@ namespace Teza.Migrations
                     b.Property<string>("InviteLink")
                         .HasColumnType("text");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Users")
+                        .HasColumnType("text");
+
                     b.Property<int>("UsersLimit")
                         .HasColumnType("integer");
 

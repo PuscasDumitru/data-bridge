@@ -14,7 +14,7 @@ using Teza.Models;
 namespace Teza.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]/[Action]")]
+    [Route("api")]
     public class QueryController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,16 +24,35 @@ namespace Teza.Controllers
             _unitOfWork = new UnitOfWork(context);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllQueriesAsync()
+        [HttpGet("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}/Query")]
+        public async Task<ActionResult<object>> GetQueriesByFolderIdAsync([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId, 
+                                                                                [FromRoute] Guid folderId)
         {
             try
             {
-                var allQueries = await _unitOfWork.QueryRepository.GetAllQueriesAsync();
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folder is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such ID",
+                        Success = false
+                    };
+                }
+
+                if (!folder.CollectionId.Equals(collectionId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong collection ID",
+                        Success = false
+                    };
+                }
 
                 return new SuccessModel
                 {
-                    Data = allQueries,
+                    Data = folder.Queries,
                     Message = "Queries retrieved",
                     Success = true
                 };
@@ -48,8 +67,9 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetQueryByIdAsync(Guid queryId)
+        [HttpGet("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}/Query/{queryId}")]
+        public async Task<ActionResult<object>> GetQueryByIdAsync([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                                       [FromRoute] Guid folderId, [FromRoute] Guid queryId)
         {
             try
             {
@@ -81,36 +101,26 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetQueriesByFolderIdAsync(Guid folderId)
+        [HttpPost("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}/Query")]
+        public async Task<ActionResult<object>> Create([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                                 [FromRoute] Guid folderId, Query query)
         {
             try
             {
-                var allQueries = await _unitOfWork.QueryRepository.GetByCondition(x => x.FolderId.Equals(folderId)).ToListAsync();
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
 
-                return new SuccessModel
+                if (folder is null)
                 {
-                    Data = allQueries,
-                    Message = "Queries retrieved",
-                    Success = true
-                };
-            }
-            catch (Exception e)
-            {
-                return new ErrorModel
-                {
-                    Error = e.Message,
-                    Success = false
-                };
-            }
-        }
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such ID",
+                        Success = false
+                    };
+                }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Create(Query query)
-        {
-            try
-            {
+                query.FolderId = folderId;
                 _unitOfWork.QueryRepository.Create(query);
+                folder.Queries.Add(query);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
@@ -130,11 +140,36 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Update(Query query)
+        [HttpPatch("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}/Query/{queryId}")]
+        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                        [FromRoute] Guid folderId, [FromRoute] Guid queryId, Query query)
         {
             try
             {
+                var queryToUpdate = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
+
+                if (queryToUpdate is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no query with such ID",
+                        Success = false
+                    };
+                }
+
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folder is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such ID",
+                        Success = false
+                    };
+                }
+
+                query.Id = queryId;
+                query.FolderId = folderId;
                 _unitOfWork.QueryRepository.Update(query);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -156,8 +191,9 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<object>> Delete(Guid queryId)
+        [HttpDelete("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}/Query/{queryId}")]
+        public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                        [FromRoute] Guid folderId, [FromRoute] Guid queryId)
         {
             try
             {
@@ -172,7 +208,19 @@ namespace Teza.Controllers
                     };
                 }
 
+                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folder is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such an ID",
+                        Success = false
+                    };
+                }
+
                 _unitOfWork.QueryRepository.Delete(query);
+                folder.Queries.Remove(query);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel

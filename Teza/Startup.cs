@@ -15,6 +15,9 @@ using Data;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Teza.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Teza
 {
@@ -30,13 +33,25 @@ namespace Teza
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"] 
+                                                   ?? Environment.GetEnvironmentVariable("TOKEN_KEY"))),
+                        ValidateIssuer = false,
+                        ValidateAudience = false
+                    };
+                    options.IncludeErrorDetails = true;
+                });
+
             var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             services.AddDbContext<RepositoryDbContext>(options =>
             {
-                // make automatic update for docker
                 options.UseNpgsql(
-                    //connectionString,
-                    Configuration.GetConnectionString("DefaultConnection"),
+                    connectionString ?? Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Teza"));
             });
             services.AddControllers(options =>
@@ -49,6 +64,29 @@ namespace Teza
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Teza", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                             Reference = new OpenApiReference
+                             {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Bearer"
+                             }
+                         },
+                        new string[]{}
+                     }
+                });
             });
         }
 
@@ -64,7 +102,6 @@ namespace Teza
 
             if (env.IsProduction())
             {
-
                 var context = app.ApplicationServices.GetService<RepositoryDbContext>();
                 context.Database.Migrate();
             }
@@ -74,6 +111,7 @@ namespace Teza
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

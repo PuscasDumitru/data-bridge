@@ -15,12 +15,14 @@ namespace Data.Repositories.Implementation
         public async Task<Workspace> GetWorkspaceByIdAsync(Guid workspaceId)
         {
             return await GetByCondition(workspace => workspace.Id.Equals(workspaceId))
+                .Include(c => c.Collections)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Workspace>> GetAllWorkspacesAsync()
+        public async Task<IEnumerable<Workspace>> GetWorkspacesByUserIdAsync(Guid userId)
         {
-            return await GetAll()
+            return await GetByCondition(workspace => workspace.UserId.Equals(userId))
+                .Include(c => c.Collections)
                 .ToListAsync();
 
         }

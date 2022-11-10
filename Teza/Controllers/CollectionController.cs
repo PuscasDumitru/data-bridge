@@ -14,7 +14,7 @@ using Teza.Models;
 namespace Teza.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]/[Action]")]
+    [Route("api")]
     public class CollectionController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,16 +24,27 @@ namespace Teza.Controllers
             _unitOfWork = new UnitOfWork(context);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllCollectionsAsync()
+        [HttpGet("Workspace/{workspaceId}/Collection")]
+        public async Task<ActionResult<object>> GetCollectionsByWorkspaceIdAsync([FromRoute] Guid workspaceId)
         {
             try
             {
-                var allCollections = await _unitOfWork.CollectionRepository.GetAllCollectionsAsync();
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no workspace with such an ID",
+                        Success = false
+                    };
+                }
+
+                //var allCollections = await _unitOfWork.CollectionRepository.GetByCondition(x => x.WorkspaceId.Equals(workspaceId)).ToListAsync();
 
                 return new SuccessModel
                 {
-                    Data = allCollections,
+                    Data = workspace.Collections,
                     Message = "Collections retrieved",
                     Success = true
                 };
@@ -48,43 +59,8 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllCollectionsByWorkspaceIdAsync(Guid workspaceId)
-        {
-            try
-            {
-                //var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
-
-                //if (workspace is null)
-                //{
-                //    return new ErrorModel
-                //    {
-                //        Error = "There's no workspace with such an ID",
-                //        Success = false
-                //    };
-                //}
-
-                var allCollections = await _unitOfWork.CollectionRepository.GetByCondition(x => x.WorkspaceId.Equals(workspaceId)).ToListAsync();
-
-                return new SuccessModel
-                {
-                    Data = allCollections,
-                    Message = "Collections retrieved",
-                    Success = true
-                };
-            }
-            catch (Exception e)
-            {
-                return new ErrorModel
-                {
-                    Error = e.Message,
-                    Success = false
-                };
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<object>> GetCollectionByIdAsync(Guid collectionId)
+        [HttpGet("Workspace/{workspaceId}/Collection/{collectionId}")]
+        public async Task<ActionResult<object>> GetCollectionByIdAsync([FromRoute] Guid collectionId, [FromRoute] Guid workspaceId)
         {
             try
             {
@@ -116,15 +92,13 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Create(Collection collection)
+        [HttpPost("Workspace/{workspaceId}/Collection")]
+        public async Task<ActionResult<object>> Create([FromRoute] Guid workspaceId, Collection collection)
         {
             try
             {
-                _unitOfWork.CollectionRepository.Create(collection);
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
 
-                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(collection.WorkspaceId);
-                
                 if (workspace is null)
                 {
                     return new ErrorModel
@@ -134,8 +108,10 @@ namespace Teza.Controllers
                     };
                 }
 
+                collection.WorkspaceId = workspaceId;
+                _unitOfWork.CollectionRepository.Create(collection);
+
                 workspace.Collections.Add(collection);
-                //collection.Workspace.Collections.Add(collection);
 
                 await _unitOfWork.SaveChangesAsync();
 
@@ -156,11 +132,35 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Update(Collection collection)
+        [HttpPatch("Workspace/{workspaceId}/Collection/{collectionId}")]
+        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId, Collection collection)
         {
             try
             {
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no workspace with such an ID",
+                        Success = false
+                    };
+                }
+
+                var collectionToUpdate = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
+
+                if (collectionToUpdate is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong collection ID",
+                        Success = false
+                    };
+                }
+
+                collection.Id = collectionToUpdate.Id;
+                collection.WorkspaceId = workspaceId;
                 _unitOfWork.CollectionRepository.Update(collection);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -182,11 +182,22 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<object>> Delete(Guid collectionId)
+        [HttpDelete("Workspace/{workspaceId}/Collection/{collectionId}")]
+        public async Task<ActionResult<object>> Delete([FromRoute] Guid collectionId, [FromRoute] Guid workspaceId)
         {
             try
             {
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no workspace with such an ID",
+                        Success = false
+                    };
+                }
+
                 var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
 
                 if (collection is null)
@@ -199,20 +210,7 @@ namespace Teza.Controllers
                 }
 
                 _unitOfWork.CollectionRepository.Delete(collection);
-
-                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(collection.WorkspaceId);
-
-                if (workspace is null)
-                {
-                    return new ErrorModel
-                    {
-                        Error = "There's no workspace with such an ID",
-                        Success = false
-                    };
-                }
-
-                //workspace.Collections.Remove(collection);
-
+                workspace.Collections.Remove(collection);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel

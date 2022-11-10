@@ -12,12 +12,15 @@ namespace Teza.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
                     DbConnectionString = table.Column<string>(type: "text", nullable: true),
                     DefaultConfigsForQueries = table.Column<string>(type: "text", nullable: true),
                     EnvVariables = table.Column<string>(type: "text", nullable: true),
                     Documentation = table.Column<string>(type: "text", nullable: true),
                     UsersLimit = table.Column<int>(type: "integer", nullable: false),
-                    InviteLink = table.Column<string>(type: "text", nullable: true)
+                    InviteLink = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Users = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -14,7 +14,7 @@ using Teza.Models;
 namespace Teza.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]/[Action]")]
+    [Route("api")]
     public class FolderController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,16 +24,34 @@ namespace Teza.Controllers
             _unitOfWork = new UnitOfWork(context);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllFolders()
+        [HttpGet("Workspace/{workspaceId}/Collection/{collectionId}/Folder")]
+        public async Task<ActionResult<object>> GetFoldersByCollectionId([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId)
         {
             try
             {
-                var allFolders = await _unitOfWork.FolderRepository.GetAllFoldersAsync();
+                var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
+
+                if (collection is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no collection with such ID",
+                        Success = false
+                    };
+                }
+
+                if (!workspaceId.Equals(collection.WorkspaceId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong workspace ID",
+                        Success = false
+                    };
+                }
 
                 return new SuccessModel
                 {
-                    Data = allFolders,
+                    Data = collection.Folders,
                     Message = "Folders retrieved",
                     Success = true
                 };
@@ -48,11 +66,32 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetFolderByIdAsync(Guid folderId)
+        [HttpGet("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}")]
+        public async Task<ActionResult<object>> GetFolderByIdAsync([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                                                    [FromRoute] Guid folderId)
         {
             try
             {
+                var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
+
+                if (collection is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no collection with such ID",
+                        Success = false
+                    };
+                }
+
+                if (!workspaceId.Equals(collection.WorkspaceId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong workspace ID",
+                        Success = false
+                    };
+                }
+
                 var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
 
                 if (folder is null)
@@ -81,36 +120,34 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllFoldersByCollectionIdAsync(Guid collectionId)
+        [HttpPost("Workspace/{workspaceId}/Collection/{collectionId}/Folder")]
+        public async Task<ActionResult<object>> Create([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId, Folder folder)
         {
             try
             {
-                var allFolders = await _unitOfWork.FolderRepository.GetByCondition(x => x.CollectionId.Equals(collectionId)).ToListAsync();
+                var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
 
-                return new SuccessModel
+                if (collection is null)
                 {
-                    Data = allFolders,
-                    Message = "Folders retrieved",
-                    Success = true
-                };
-            }
-            catch (Exception e)
-            {
-                return new ErrorModel
-                {
-                    Error = e.Message,
-                    Success = false
-                };
-            }
-        }
+                    return new ErrorModel
+                    {
+                        Error = "There's no collection with such ID",
+                        Success = false
+                    };
+                }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Create(Folder folder)
-        {
-            try
-            {
+                if (!workspaceId.Equals(collection.WorkspaceId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong workspace ID",
+                        Success = false
+                    };
+                }
+
+                folder.CollectionId = collectionId;
                 _unitOfWork.FolderRepository.Create(folder);
+                collection.Folders.Add(folder);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
@@ -130,11 +167,46 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Update(Folder folder)
+        [HttpPatch("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}")]
+        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                                                    [FromRoute] Guid folderId, Folder folder)
         {
             try
             {
+                var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
+
+                if (collection is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no collection with such ID",
+                        Success = false
+                    };
+                }
+
+                if (!workspaceId.Equals(collection.WorkspaceId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong workspace ID",
+                        Success = false
+                    };
+                }
+
+                var folderToUpdate = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folderToUpdate is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such ID",
+                        Success = false
+                    };
+                }
+
+                folder.Id = folderId;
+                folder.CollectionId = collectionId;
+                
                 _unitOfWork.FolderRepository.Update(folder);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -156,28 +228,50 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<object>> Delete(Guid folderId)
+        [HttpDelete("Workspace/{workspaceId}/Collection/{collectionId}/Folder/{folderId}")]
+        public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId, [FromRoute] Guid collectionId,
+                                                                                    [FromRoute] Guid folderId)
         {
             try
             {
-                var folder = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+                var collection = await _unitOfWork.CollectionRepository.GetCollectionByIdAsync(collectionId);
 
-                if (folder is null)
+                if (collection is null)
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such an ID",
+                        Error = "There's no collection with such ID",
                         Success = false
                     };
                 }
 
-                _unitOfWork.FolderRepository.Delete(folder);
+                if (!workspaceId.Equals(collection.WorkspaceId))
+                {
+                    return new ErrorModel
+                    {
+                        Error = "Wrong workspace ID",
+                        Success = false
+                    };
+                }
+
+                var folderToDelete = await _unitOfWork.FolderRepository.GetFolderByIdAsync(folderId);
+
+                if (folderToDelete is null)
+                {
+                    return new ErrorModel
+                    {
+                        Error = "There's no folder with such ID",
+                        Success = false
+                    };
+                }
+                
+                _unitOfWork.FolderRepository.Delete(folderToDelete);
+                collection.Folders.Remove(folderToDelete);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
                 {
-                    Data = folder,
+                    Data = folderToDelete,
                     Message = "Folder deleted",
                     Success = true
                 };

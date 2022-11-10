@@ -15,12 +15,14 @@ namespace Data.Repositories.Implementation
         public async Task<Collection> GetCollectionByIdAsync(Guid collectionId)
         {
             return await GetByCondition(coll => coll.Id.Equals(collectionId))
+                .Include(f => f.Folders)
                 .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Collection>> GetAllCollectionsAsync()
         {
             return await GetAll()
+                .Include(f => f.Folders)
                 .ToListAsync();
 
         }

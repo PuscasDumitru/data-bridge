@@ -10,11 +10,13 @@ using Data.Entities;
 using Data.Repositories.Implementation;
 using Data.Repositories.Interfaces;
 using Teza.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Teza.Controllers
 {
     [ApiController]
-    [Route("api/[Controller]/[Action]")]
+    [Route("api/[Controller]")]
     public class WorkspaceController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,18 +26,35 @@ namespace Teza.Controllers
             _unitOfWork = new UnitOfWork(context);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<object>> GetAllWorkspacesAsync()
+        [HttpPost("{workspaceId}/User/{newCollaboratorId}")]
+        [Authorize]
+        public async Task<ActionResult<object>> AddCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] Guid newCollaboratorId)
         {
             try
             {
-                var allWorkspaces = await _unitOfWork.WorkspaceRepository.GetAllWorkspacesAsync();
-
-                return new SuccessModel
+                if (HttpContext.User.Identity is ClaimsIdentity identity)
                 {
-                    Data = allWorkspaces,
-                    Message = "Workspaces retrieved",
-                    Success = true
+                    IEnumerable<Claim> claims = identity.Claims;
+                    var userId = identity.FindFirst("userId").Value;
+                    //validate collaborator id
+
+                    var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+                    workspace.Users += newCollaboratorId + ";";
+                    _unitOfWork.WorkspaceRepository.Update(workspace);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        Data = newCollaboratorId,
+                        Message = "New collaborator added to workspace",
+                        Success = true
+                    };
+                }
+
+                return new ErrorModel()
+                {
+                    Success = false,
+                    Error = "Claim userId missing"
                 };
             }
             catch (Exception e)
@@ -49,7 +68,45 @@ namespace Teza.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<object>> GetWorkspaceByIdAsync(Guid workspaceId)
+        [Authorize]
+        public async Task<ActionResult<object>> GetWorkspacesByUserIdAsync()
+        {
+            try
+            {
+                if (HttpContext.User.Identity is ClaimsIdentity identity)
+                {
+                    IEnumerable<Claim> claims = identity.Claims;
+                    var userId = identity.FindFirst("userId").Value;
+
+                    var allWorkspaces = await _unitOfWork.WorkspaceRepository.GetWorkspacesByUserIdAsync(new Guid(userId));
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        Data = allWorkspaces,
+                        Message = "Workspaces retrieved",
+                        Success = true
+                    };
+                }
+
+                return new ErrorModel()
+                {
+                    Success = false,
+                    Error = "Claim userId missing"
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    Error = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        [HttpGet("{workspaceId}")]
+        public async Task<ActionResult<object>> GetWorkspaceByIdAsync([FromRoute] Guid workspaceId)
         {
             try
             {
@@ -82,18 +139,32 @@ namespace Teza.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<object>> Create(Workspace workspace)
         {
             try
             {
-                _unitOfWork.WorkspaceRepository.Create(workspace);
-                await _unitOfWork.SaveChangesAsync();
-
-                return new SuccessModel
+                if (HttpContext.User.Identity is ClaimsIdentity identity)
                 {
-                    Data = workspace,
-                    Message = "Workspace created",
-                    Success = true
+                    IEnumerable<Claim> claims = identity.Claims;
+                    var userId = identity.FindFirst("userId").Value;
+                    workspace.UserId = new Guid(userId);
+
+                    _unitOfWork.WorkspaceRepository.Create(workspace);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        Data = workspace,
+                        Message = "Workspace created",
+                        Success = true
+                    };
+                }
+
+                return new ErrorModel()
+                {
+                    Success = false,
+                    Error = "Claim userId missing"
                 };
             }
             catch (Exception e)
@@ -106,19 +177,45 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<object>> Update(Workspace workspace)
+        [HttpPatch("{workspaceId}")]
+        [Authorize]
+        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, Workspace workspace)
         {
+            var workspaceToUpdate = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+            if (workspaceToUpdate is null)
+            {
+                return new ErrorModel
+                {
+                    Error = "There's no workspace with such and ID",
+                    Success = false
+                };
+            }
+
             try
             {
-                _unitOfWork.WorkspaceRepository.Update(workspace);
-                await _unitOfWork.SaveChangesAsync();
-
-                return new SuccessModel
+                if (HttpContext.User.Identity is ClaimsIdentity identity)
                 {
-                    Data = workspace,
-                    Message = "Workspace updated",
-                    Success = true
+                    IEnumerable<Claim> claims = identity.Claims;
+                    var userId = identity.FindFirst("userId").Value;
+                    workspace.UserId = new Guid(userId);
+
+                    workspace.Id = workspaceToUpdate.Id;
+                    _unitOfWork.WorkspaceRepository.Update(workspace);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        Data = workspace,
+                        Message = "Workspace updated",
+                        Success = true
+                    };
+                }
+
+                return new ErrorModel()
+                {
+                    Success = false,
+                    Error = "Claim userId missing"
                 };
 
             }
@@ -132,8 +229,9 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<object>> Delete(Guid workspaceId)
+        [HttpDelete("{workspaceId}")]
+        [Authorize]
+        public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId)
         {
             try
             {
