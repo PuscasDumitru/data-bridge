@@ -18,6 +18,7 @@ using Teza.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Teza.Extensions;
 
 namespace Teza
 {
@@ -107,6 +108,7 @@ namespace Teza
                 context.Database.Migrate();
             }
 
+            app.UseStatusCodePagesWithCustomResult();
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Teza v1"));
 
