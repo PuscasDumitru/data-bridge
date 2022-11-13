@@ -36,8 +36,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such ID",
-                        Success = false
+                        error = "There's no folder with such ID",
+                        success = false
                     };
                 }
 
@@ -45,24 +45,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong collection ID",
-                        Success = false
+                        error = "Wrong collection ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = folder.Queries,
-                    Message = "Queries retrieved",
-                    Success = true
+                    data = folder.Queries,
+                    message = "Queries retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -79,24 +79,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no query with such an ID",
-                        Success = false
+                        error = "There's no query with such an ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = query,
-                    Message = "Query retrieved",
-                    Success = true
+                    data = query,
+                    message = "Query retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -113,8 +113,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such ID",
-                        Success = false
+                        error = "There's no folder with such ID",
+                        success = false
                     };
                 }
 
@@ -125,17 +125,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = query,
-                    Message = "Query created",
-                    Success = true
+                    data = query,
+                    message = "Query created",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -152,8 +152,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no query with such ID",
-                        Success = false
+                        error = "There's no query with such ID",
+                        success = false
                     };
                 }
 
@@ -163,8 +163,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such ID",
-                        Success = false
+                        error = "There's no folder with such ID",
+                        success = false
                     };
                 }
 
@@ -175,9 +175,9 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = query,
-                    Message = "Query updated",
-                    Success = true
+                    data = query,
+                    message = "Query updated",
+                    success = true
                 };
 
             }
@@ -185,8 +185,8 @@ namespace Teza.Controllers
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -203,8 +203,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no query with such an ID",
-                        Success = false
+                        error = "There's no query with such an ID",
+                        success = false
                     };
                 }
 
@@ -214,8 +214,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such an ID",
-                        Success = false
+                        error = "There's no folder with such an ID",
+                        success = false
                     };
                 }
 
@@ -225,17 +225,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = query,
-                    Message = "Query deleted",
-                    Success = true
+                    data = query,
+                    message = "Query deleted",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }

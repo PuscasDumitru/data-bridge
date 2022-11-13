@@ -35,8 +35,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no collection with such ID",
-                        Success = false
+                        error = "There's no collection with such ID",
+                        success = false
                     };
                 }
 
@@ -44,24 +44,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong workspace ID",
-                        Success = false
+                        error = "Wrong workspace ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = collection.Folders,
-                    Message = "Folders retrieved",
-                    Success = true
+                    data = collection.Folders,
+                    message = "Folders retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -78,8 +78,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no collection with such ID",
-                        Success = false
+                        error = "There's no collection with such ID",
+                        success = false
                     };
                 }
 
@@ -87,8 +87,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong workspace ID",
-                        Success = false
+                        error = "Wrong workspace ID",
+                        success = false
                     };
                 }
 
@@ -98,24 +98,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such an ID",
-                        Success = false
+                        error = "There's no folder with such an ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = folder,
-                    Message = "Folder retrieved",
-                    Success = true
+                    data = folder,
+                    message = "Folder retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -131,8 +131,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no collection with such ID",
-                        Success = false
+                        error = "There's no collection with such ID",
+                        success = false
                     };
                 }
 
@@ -140,8 +140,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong workspace ID",
-                        Success = false
+                        error = "Wrong workspace ID",
+                        success = false
                     };
                 }
 
@@ -152,17 +152,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = folder,
-                    Message = "Folder created",
-                    Success = true
+                    data = folder,
+                    message = "Folder created",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -179,8 +179,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no collection with such ID",
-                        Success = false
+                        error = "There's no collection with such ID",
+                        success = false
                     };
                 }
 
@@ -188,8 +188,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong workspace ID",
-                        Success = false
+                        error = "Wrong workspace ID",
+                        success = false
                     };
                 }
 
@@ -199,8 +199,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such ID",
-                        Success = false
+                        error = "There's no folder with such ID",
+                        success = false
                     };
                 }
 
@@ -212,9 +212,9 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = folder,
-                    Message = "Folder updated",
-                    Success = true
+                    data = folder,
+                    message = "Folder updated",
+                    success = true
                 };
 
             }
@@ -222,8 +222,8 @@ namespace Teza.Controllers
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -240,8 +240,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no collection with such ID",
-                        Success = false
+                        error = "There's no collection with such ID",
+                        success = false
                     };
                 }
 
@@ -249,8 +249,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "Wrong workspace ID",
-                        Success = false
+                        error = "Wrong workspace ID",
+                        success = false
                     };
                 }
 
@@ -260,8 +260,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no folder with such ID",
-                        Success = false
+                        error = "There's no folder with such ID",
+                        success = false
                     };
                 }
                 
@@ -271,17 +271,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = folderToDelete,
-                    Message = "Folder deleted",
-                    Success = true
+                    data = folderToDelete,
+                    message = "Folder deleted",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }

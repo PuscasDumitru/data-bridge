@@ -7,8 +7,8 @@ namespace Teza.Models
 {
     public class SuccessModel
     {
-        public bool Success { get; set; }
-        public object Data { get; set; }
-        public string Message { get; set; }
+        public bool success { get; set; }
+        public object data { get; set; }
+        public string message { get; set; }
     }
 }

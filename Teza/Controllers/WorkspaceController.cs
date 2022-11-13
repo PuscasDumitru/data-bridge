@@ -47,24 +47,24 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        Data = newCollaboratorId,
-                        Message = "New collaborator added to workspace",
-                        Success = true
+                        data = newCollaboratorId,
+                        message = "New collaborator added to workspace",
+                        success = true
                     };
                 }
 
                 return new ErrorModel()
                 {
-                    Success = false,
-                    Error = "Claim userId missing"
+                    success = false,
+                    error = "Claim userId missing"
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -86,24 +86,24 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        Data = allWorkspaces,
-                        Message = "Workspaces retrieved",
-                        Success = true
+                        data = allWorkspaces,
+                        message = "Workspaces retrieved",
+                        success = true
                     };
                 }
 
                 return new ErrorModel()
                 {
-                    Success = false,
-                    Error = "Claim userId missing"
+                    success = false,
+                    error = "Claim userId missing"
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -119,24 +119,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no workspace with such an ID",
-                        Success = false
+                        error = "There's no workspace with such an ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = workspace,
-                    Message = "Workspace retrieved",
-                    Success = true
+                    data = workspace,
+                    message = "Workspace retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -159,24 +159,24 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        Data = workspace,
-                        Message = "Workspace created",
-                        Success = true
+                        data = workspace,
+                        message = "Workspace created",
+                        success = true
                     };
                 }
 
                 return new ErrorModel()
                 {
-                    Success = false,
-                    Error = "Claim userId missing"
+                    success = false,
+                    error = "Claim userId missing"
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -192,8 +192,8 @@ namespace Teza.Controllers
             {
                 return new ErrorModel
                 {
-                    Error = "There's no workspace with such and ID",
-                    Success = false
+                    error = "There's no workspace with such and ID",
+                    success = false
                 };
             }
 
@@ -211,16 +211,16 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        Data = workspace,
-                        Message = "Workspace updated",
-                        Success = true
+                        data = workspace,
+                        message = "Workspace updated",
+                        success = true
                     };
                 }
 
                 return new ErrorModel()
                 {
-                    Success = false,
-                    Error = "Claim userId missing"
+                    success = false,
+                    error = "Claim userId missing"
                 };
 
             }
@@ -228,8 +228,8 @@ namespace Teza.Controllers
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -247,8 +247,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no workspace with such an ID",
-                        Success = false
+                        error = "There's no workspace with such an ID",
+                        success = false
                     };
                 }
 
@@ -257,17 +257,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = workspace,
-                    Message = "Workspace deleted",
-                    Success = true
+                    data = workspace,
+                    message = "Workspace deleted",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }

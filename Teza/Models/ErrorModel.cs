@@ -7,7 +7,7 @@ namespace Teza.Models
 {
     public class ErrorModel
     {
-        public bool Success { get; set; }
-        public string Error { get; set; }
+        public bool success { get; set; }
+        public string error { get; set; }
     }
 }

@@ -13,17 +13,18 @@ namespace Teza.Filters
             {
                 var response = new ErrorModel()
                 {
-                    Success = false,
-                    Error = "One or more validation errors occurred."
+                    success = false,
+                    error = "One or more validation errors occurred."
                 };
 
+                context.HttpContext.Response.ContentType = "application/json";
                 context.Result = new ObjectResult(response);
             }
         }
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-
+            context.HttpContext.Response.ContentType = "application/json";
         }
     }
 }

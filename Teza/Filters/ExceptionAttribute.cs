@@ -14,9 +14,11 @@ namespace Teza.Filters
         {
             var result = new ObjectResult(new ErrorModel()
             {
-                Success = false,
-                Error = context.Exception.Message
+                success = false,
+                error = context.Exception.Message
             });
+
+            context.HttpContext.Response.ContentType = "application/json";
             context.Result = result;
         }
     }

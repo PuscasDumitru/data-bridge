@@ -33,17 +33,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = allHistories,
-                    Message = "Histories retrieved",
-                    Success = true
+                    data = allHistories,
+                    message = "Histories retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -59,24 +59,24 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no history with such an ID",
-                        Success = false
+                        error = "There's no history with such an ID",
+                        success = false
                     };
                 }
 
                 return new SuccessModel
                 {
-                    Data = history,
-                    Message = "History retrieved",
-                    Success = true
+                    data = history,
+                    message = "History retrieved",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -91,17 +91,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = history,
-                    Message = "History created",
-                    Success = true
+                    data = history,
+                    message = "History created",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -116,9 +116,9 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = history,
-                    Message = "History updated",
-                    Success = true
+                    data = history,
+                    message = "History updated",
+                    success = true
                 };
 
             }
@@ -126,8 +126,8 @@ namespace Teza.Controllers
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
@@ -143,8 +143,8 @@ namespace Teza.Controllers
                 {
                     return new ErrorModel
                     {
-                        Error = "There's no history with such an ID",
-                        Success = false
+                        error = "There's no history with such an ID",
+                        success = false
                     };
                 }
 
@@ -153,17 +153,17 @@ namespace Teza.Controllers
 
                 return new SuccessModel
                 {
-                    Data = history,
-                    Message = "History deleted",
-                    Success = true
+                    data = history,
+                    message = "History deleted",
+                    success = true
                 };
             }
             catch (Exception e)
             {
                 return new ErrorModel
                 {
-                    Error = e.Message,
-                    Success = false
+                    error = e.Message,
+                    success = false
                 };
             }
         }
