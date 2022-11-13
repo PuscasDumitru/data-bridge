@@ -8,7 +8,7 @@ using Teza.Models;
 
 namespace Teza.Filters
 {
-    public class ExceptionFilter : ExceptionFilterAttribute
+    public class ExceptionAttribute : ExceptionFilterAttribute
     {
         public override void OnException(ExceptionContext context)
         {

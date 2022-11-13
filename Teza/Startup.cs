@@ -39,24 +39,25 @@ namespace Teza
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"] 
-                                                   ?? Environment.GetEnvironmentVariable("TOKEN_KEY"))),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"])),
                         ValidateIssuer = false,
                         ValidateAudience = false
                     };
                     options.IncludeErrorDetails = true;
                 });
 
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             services.AddDbContext<RepositoryDbContext>(options =>
             {
                 options.UseNpgsql(
-                    connectionString ?? Configuration.GetConnectionString("DefaultConnection"),
+                    Configuration.GetConnectionString("DefaultConnection"), 
                     b => b.MigrationsAssembly("Teza"));
             });
+
+            services.AddScoped<AuthorizationAttribute>();
             services.AddControllers(options =>
             {
-                options.Filters.Add<ExceptionFilter>();
+                options.Filters.Add<ExceptionAttribute>();
+                options.Filters.Add<ValidateModelAttribute>();
             })
                .AddNewtonsoftJson(options =>
                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);

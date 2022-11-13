@@ -14,9 +14,7 @@ services:
             dockerfile: Dockerfile
         ports:
             - "8081:80"
-        environment:
-            DB_CONNECTION_STRING: "User ID=postgres;Password=191993acces;Host=postgres_image;Port=5432;Database=MainDb;Pooling=true;Connection Lifetime=0;"
-            TOKEN_KEY: "90e00a01-7674-4a9a-9280-feeb0ed682ad"
+        #environment:
         networks:
             - teza-dev
 
@@ -31,4 +29,4 @@ services:
             POSTGRES_DB: "MainDb"
         networks:
             - teza-dev
-            
+

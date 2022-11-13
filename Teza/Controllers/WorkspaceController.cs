@@ -12,6 +12,7 @@ using Data.Repositories.Interfaces;
 using Teza.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Teza.Filters;
 
 namespace Teza.Controllers
 {
@@ -27,7 +28,8 @@ namespace Teza.Controllers
         }
 
         [HttpPost("{workspaceId}/User/{newCollaboratorId}")]
-        [Authorize]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> AddCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] Guid newCollaboratorId)
         {
             try
@@ -68,7 +70,8 @@ namespace Teza.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> GetWorkspacesByUserIdAsync()
         {
             try
@@ -139,7 +142,8 @@ namespace Teza.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Create(Workspace workspace)
         {
             try
@@ -178,7 +182,8 @@ namespace Teza.Controllers
         }
 
         [HttpPatch("{workspaceId}")]
-        [Authorize]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, Workspace workspace)
         {
             var workspaceToUpdate = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
@@ -230,7 +235,8 @@ namespace Teza.Controllers
         }
 
         [HttpDelete("{workspaceId}")]
-        [Authorize]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId)
         {
             try
