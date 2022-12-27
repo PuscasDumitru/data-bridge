@@ -43,5 +43,18 @@ namespace Data.Repositories.Implementation
             RepositoryContext.Set<T>().Remove(entity);
         }
 
+        public T UpdateEntity(T originalEntity, T updateEntity)
+        {
+            foreach (var property in updateEntity.GetType().GetProperties())
+            {
+                if (property.GetValue(updateEntity, null) == null)
+                {
+                    property.SetValue(updateEntity, originalEntity.GetType().GetProperty(property.Name)
+                        .GetValue(originalEntity, null));
+                }
+            }
+            return updateEntity;
+        }
+
     }
 }

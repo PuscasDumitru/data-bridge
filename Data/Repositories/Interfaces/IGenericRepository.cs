@@ -14,5 +14,6 @@ namespace Data.Repositories.Interfaces
         void Create(T entity);
         void Update(T entity);
         void Delete(T entity);
+        T UpdateEntity(T originalEntity, T updateEntity);
     }
 }

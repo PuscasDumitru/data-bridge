@@ -11,11 +11,11 @@ namespace Data.Entities
     {
         //[ForeignKey("Query")]
         
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         //public int UserId { get; set; }
         //public int QueryId { get; set; }
         public Action Action { get; set; }
-        public virtual Query Query { get; set; }
+        public Query Query { get; set; }
         //public virtual User User { get; set; }
     }
 }

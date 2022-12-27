@@ -41,14 +41,70 @@ namespace Teza.Controllers
                     //validate collaborator id
 
                     var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
-                    workspace.Users += newCollaboratorId + ";";
-                    _unitOfWork.WorkspaceRepository.Update(workspace);
+
+                    var newCollaborator = new User
+                    {
+                        Id = new Guid(userId),
+                        WorkspaceId = workspaceId,
+                    };
+
+                    _unitOfWork.WorkspaceRepository.AddUser(newCollaborator);
+                    workspace.Collaborators.Add(newCollaborator);
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
                     {
                         data = newCollaboratorId,
                         message = "New collaborator added to workspace",
+                        success = true
+                    };
+                }
+
+                return new ErrorModel()
+                {
+                    success = false,
+                    error = "Claim userId missing"
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    error = e.Message,
+                    success = false
+                };
+            }
+        }
+
+        [HttpPost("{workspaceId}/User/{collaboratorId}")]
+        //[Authorize]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
+        public async Task<ActionResult<object>> RemoveCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] Guid collaboratorId)
+        {
+            try
+            {
+                if (HttpContext.User.Identity is ClaimsIdentity identity)
+                {
+                    IEnumerable<Claim> claims = identity.Claims;
+                    var userId = identity.FindFirst("userId").Value;
+                    //validate collaborator id
+
+                    var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                    var newCollaborator = new User
+                    {
+                        Id = new Guid(userId),
+                        WorkspaceId = workspaceId,
+                    };
+
+                    _unitOfWork.WorkspaceRepository.AddUser(newCollaborator);
+                    workspace.Collaborators.Add(newCollaborator);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        data = collaboratorId,
+                        message = "Collaborator removed from workspace",
                         success = true
                     };
                 }
@@ -184,15 +240,15 @@ namespace Teza.Controllers
         [HttpPatch("{workspaceId}")]
         //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
-        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, Workspace workspace)
+        public async Task<ActionResult<object>> Update([FromRoute] Guid workspaceId, [FromBody] Workspace workspace)
         {
             var workspaceToUpdate = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
-
+            
             if (workspaceToUpdate is null)
             {
                 return new ErrorModel
                 {
-                    error = "There's no workspace with such and ID",
+                    error = "There's no workspace with such an ID",
                     success = false
                 };
             }
@@ -203,15 +259,15 @@ namespace Teza.Controllers
                 {
                     IEnumerable<Claim> claims = identity.Claims;
                     var userId = identity.FindFirst("userId").Value;
-                    workspace.UserId = new Guid(userId);
-
-                    workspace.Id = workspaceToUpdate.Id;
-                    _unitOfWork.WorkspaceRepository.Update(workspace);
+                    
+                    var updatedWorkspace = _unitOfWork.WorkspaceRepository.UpdateEntity(workspaceToUpdate, workspace);
+                   
+                    _unitOfWork.WorkspaceRepository.Update(updatedWorkspace);
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
                     {
-                        data = workspace,
+                        data = updatedWorkspace,
                         message = "Workspace updated",
                         success = true
                     };

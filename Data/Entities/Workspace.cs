@@ -13,20 +13,20 @@ namespace Data.Entities
         public Workspace()
         {
             this.Collections = new HashSet<Collection>();
+            this.Collaborators = new HashSet<User>();
         }
 
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public string Name { get; set; }
         public string DbConnectionString { get; set; }
         public string DefaultConfigsForQueries { get; set; }
         public string EnvVariables { get; set; }
         public string Documentation { get; set; }
-        public int UsersLimit { get; set; }
+        public int? UsersLimit { get; set; }
         public string InviteLink { get; set; }
-        public virtual ICollection<Collection> Collections { get; set; }
+        public ICollection<Collection> Collections { get; set; }
 
-        public Guid UserId { get; set; }
-        public string Users { get; set; } = "1;2;3;";
-        public ICollection<string> UsersList { get { return Users.Split(';'); } }
+        public Guid? UserId { get; set; }
+        public ICollection<User> Collaborators { get; set; }
     }
 }

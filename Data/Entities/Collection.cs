@@ -13,13 +13,13 @@ namespace Data.Entities
             this.Folders = new HashSet<Folder>();
         }
 
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public string Name { get; set; }
         public string Documentation { get; set; }
-        public bool IsFavorite { get; set; }
+        public bool? IsFavorite { get; set; }
         public string ShareLink { get; set; }
-        public Guid WorkspaceId { get; set; }
-        public virtual Workspace Workspace { get; set; }
-        public virtual ICollection<Folder> Folders { get; set; }
+        public Guid? WorkspaceId { get; set; }
+        public Workspace Workspace { get; set; }
+        public ICollection<Folder> Folders { get; set; }
     }
 }

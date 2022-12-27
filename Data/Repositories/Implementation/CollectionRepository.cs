@@ -16,6 +16,7 @@ namespace Data.Repositories.Implementation
         {
             return await GetByCondition(coll => coll.Id.Equals(collectionId))
                 .Include(f => f.Folders)
+                .ThenInclude(q => q.Queries)
                 .FirstOrDefaultAsync();
         }
 
@@ -23,6 +24,7 @@ namespace Data.Repositories.Implementation
         {
             return await GetAll()
                 .Include(f => f.Folders)
+                .ThenInclude(q => q.Queries)
                 .ToListAsync();
 
         }

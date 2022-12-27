@@ -204,15 +204,13 @@ namespace Teza.Controllers
                     };
                 }
 
-                folder.Id = folderId;
-                folder.CollectionId = collectionId;
-                
-                _unitOfWork.FolderRepository.Update(folder);
+                var updatedFolder = _unitOfWork.FolderRepository.UpdateEntity(folderToUpdate, folder);
+                _unitOfWork.FolderRepository.Update(updatedFolder);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
                 {
-                    data = folder,
+                    data = updatedFolder,
                     message = "Folder updated",
                     success = true
                 };

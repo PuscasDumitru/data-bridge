@@ -168,14 +168,13 @@ namespace Teza.Controllers
                     };
                 }
 
-                query.Id = queryId;
-                query.FolderId = folderId;
-                _unitOfWork.QueryRepository.Update(query);
+                var updatedQuery = _unitOfWork.QueryRepository.UpdateEntity(queryToUpdate, query);
+                _unitOfWork.QueryRepository.Update(updatedQuery);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
                 {
-                    data = query,
+                    data = updatedQuery,
                     message = "Query updated",
                     success = true
                 };

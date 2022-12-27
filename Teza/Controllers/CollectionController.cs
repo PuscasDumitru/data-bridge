@@ -158,15 +158,14 @@ namespace Teza.Controllers
                         success = false
                     };
                 }
-
-                collection.Id = collectionToUpdate.Id;
-                collection.WorkspaceId = workspaceId;
-                _unitOfWork.CollectionRepository.Update(collection);
+                
+                var updatedCollection = _unitOfWork.CollectionRepository.UpdateEntity(collectionToUpdate, collection);
+                _unitOfWork.CollectionRepository.Update(updatedCollection);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new SuccessModel
                 {
-                    data = collection,
+                    data = updatedCollection,
                     message = "Collection updated",
                     success = true
                 };
