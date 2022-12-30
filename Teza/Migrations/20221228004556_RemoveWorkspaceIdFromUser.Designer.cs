@@ -3,15 +3,17 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    partial class RepositoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221228004556_RemoveWorkspaceIdFromUser")]
+    partial class RemoveWorkspaceIdFromUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,18 +133,10 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("UserName")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("WorkspaceId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("User");
                 });
@@ -182,6 +176,21 @@ namespace Teza.Migrations
                     b.ToTable("Workspace");
                 });
 
+            modelBuilder.Entity("UserWorkspace", b =>
+                {
+                    b.Property<Guid>("CollaboratorsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkspacesId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CollaboratorsId", "WorkspacesId");
+
+                    b.HasIndex("WorkspacesId");
+
+                    b.ToTable("UserWorkspace");
+                });
+
             modelBuilder.Entity("Data.Entities.Collection", b =>
                 {
                     b.HasOne("Data.Entities.Workspace", "Workspace")
@@ -218,13 +227,19 @@ namespace Teza.Migrations
                     b.Navigation("Folder");
                 });
 
-            modelBuilder.Entity("Data.Entities.User", b =>
+            modelBuilder.Entity("UserWorkspace", b =>
                 {
-                    b.HasOne("Data.Entities.Workspace", "Workspace")
-                        .WithMany("Collaborators")
-                        .HasForeignKey("WorkspaceId");
+                    b.HasOne("Data.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CollaboratorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Workspace");
+                    b.HasOne("Data.Entities.Workspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspacesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Data.Entities.Collection", b =>
@@ -239,8 +254,6 @@ namespace Teza.Migrations
 
             modelBuilder.Entity("Data.Entities.Workspace", b =>
                 {
-                    b.Navigation("Collaborators");
-
                     b.Navigation("Collections");
                 });
 #pragma warning restore 612, 618

@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Teza.Extensions;
+using Teza.Services;
 
 namespace Teza
 {
@@ -54,6 +55,10 @@ namespace Teza
                     b => b.MigrationsAssembly("Teza"));
             });
 
+            services.AddHttpClient<IAuthService, AuthService>(c =>
+            {
+                c.BaseAddress = new Uri("http://localhost:8080/api/Account/Users/"); // localhost:8080 / 22695
+            });
             services.AddScoped<AuthorizationAttribute>();
             services.AddControllers(options =>
             {

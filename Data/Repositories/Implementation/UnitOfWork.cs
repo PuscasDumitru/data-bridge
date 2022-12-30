@@ -17,6 +17,7 @@ namespace Data.Repositories.Implementation
         HistoryRepository _historyRepository;
         QueryRepository _queryRepository;
         WorkspaceRepository _workspaceRepository;
+        UserRepository _userRepository;
 
         public UnitOfWork(RepositoryDbContext dbContext) => _dbContext = dbContext;
 
@@ -53,6 +54,15 @@ namespace Data.Repositories.Implementation
             {
                 _workspaceRepository ??= new WorkspaceRepository(_dbContext);
                 return _workspaceRepository;
+            }
+        }
+
+        public UserRepository UserRepository
+        {
+            get
+            {
+                _userRepository ??= new UserRepository(_dbContext);
+                return _userRepository;
             }
         }
 

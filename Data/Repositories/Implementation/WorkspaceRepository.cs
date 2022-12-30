@@ -32,23 +32,6 @@ namespace Data.Repositories.Implementation
                 .ToListAsync();
 
         }
-
-        //public Workspace UpdateEntity(Workspace originalWorkspace, Workspace updatedWorkspace)
-        //{
-        //    foreach (var property in updatedWorkspace.GetType().GetProperties())
-        //    {
-        //        if (property.GetValue(updatedWorkspace, null) == null)
-        //        {
-        //            property.SetValue(updatedWorkspace, originalWorkspace.GetType().GetProperty(property.Name)
-        //            .GetValue(originalWorkspace, null));
-        //        }
-        //    }
-        //    return updatedWorkspace;
-        //}
-
-        public void AddUser(User user)
-        {
-            RepositoryContext.User.Add(user);
-        }
+   
     }
 }

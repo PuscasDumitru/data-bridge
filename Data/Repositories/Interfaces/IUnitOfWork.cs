@@ -16,6 +16,7 @@ namespace Data.Repositories.Interfaces
         HistoryRepository HistoryRepository { get; }
         QueryRepository QueryRepository { get; }
         WorkspaceRepository WorkspaceRepository { get; }
+        UserRepository UserRepository { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
