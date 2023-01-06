@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    [Migration("20221230095750_RemoveWorkspaceUserManyToMany")]
-    partial class RemoveWorkspaceUserManyToMany
+    [Migration("20230102140506_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,16 +27,7 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Documentation")
-                        .HasColumnType("text");
-
-                    b.Property<bool?>("IsFavorite")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ShareLink")
                         .HasColumnType("text");
 
                     b.Property<Guid?>("WorkspaceId")
@@ -58,9 +49,6 @@ namespace Teza.Migrations
                     b.Property<Guid?>("CollectionId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Documentation")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
@@ -77,15 +65,7 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Action")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("QueryId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("QueryId");
 
                     b.ToTable("History");
                 });
@@ -96,20 +76,14 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CollectionId")
+                        .HasColumnType("uuid");
+
                     b.Property<int?>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DefaultResponseWithLimit")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Documentation")
-                        .HasColumnType("text");
-
                     b.Property<Guid?>("FolderId")
                         .HasColumnType("uuid");
-
-                    b.Property<double?>("LastExecuteTime")
-                        .HasColumnType("double precision");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -131,6 +105,12 @@ namespace Teza.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
@@ -155,16 +135,10 @@ namespace Teza.Migrations
                     b.Property<string>("DbConnectionString")
                         .HasColumnType("text");
 
-                    b.Property<string>("DefaultConfigsForQueries")
-                        .HasColumnType("text");
-
                     b.Property<string>("Documentation")
                         .HasColumnType("text");
 
                     b.Property<string>("EnvVariables")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InviteLink")
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -172,9 +146,6 @@ namespace Teza.Migrations
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
-
-                    b.Property<int?>("UsersLimit")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -197,15 +168,6 @@ namespace Teza.Migrations
                         .HasForeignKey("CollectionId");
 
                     b.Navigation("Collection");
-                });
-
-            modelBuilder.Entity("Data.Entities.History", b =>
-                {
-                    b.HasOne("Data.Entities.Query", "Query")
-                        .WithMany()
-                        .HasForeignKey("QueryId");
-
-                    b.Navigation("Query");
                 });
 
             modelBuilder.Entity("Data.Entities.Query", b =>

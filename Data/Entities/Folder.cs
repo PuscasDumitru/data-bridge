@@ -15,7 +15,7 @@ namespace Data.Entities
 
         public Guid? Id { get; set; }
         public string Name { get; set; }
-        public string Documentation { get; set; }
+        //public string Documentation { get; set; }
         public Guid? CollectionId { get; set; }
         public Collection Collection { get; set; }
         public ICollection<Query> Queries { get; set; }

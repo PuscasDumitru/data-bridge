@@ -23,7 +23,8 @@ namespace Teza.Services
             var json = response.Content.ReadAsStringAsync().Result;
 
             var obj2 = JsonConvert.DeserializeObject<AuthServiceModel>(json);
-            var obj = JsonConvert.DeserializeObject<SuccessModel>(json);
+            //var obj = JsonConvert.DeserializeObject<SuccessModel>(json);
+            Console.WriteLine("Problem here");
             
             return obj2;
         }

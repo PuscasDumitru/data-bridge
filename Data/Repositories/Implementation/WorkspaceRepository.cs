@@ -24,7 +24,7 @@ namespace Data.Repositories.Implementation
 
         public async Task<IEnumerable<Workspace>> GetWorkspacesByUserIdAsync(Guid userId)
         {
-            return await GetByCondition(workspace => workspace.UserId.Equals(userId))
+            return await GetByCondition(workspace => workspace.Collaborators.Any(user => user.UserId == userId))
                 .Include(col => col.Collaborators)
                 .Include(c => c.Collections)
                 .ThenInclude(f => f.Folders)

@@ -19,11 +19,12 @@ namespace Data.Entities
         public Guid? Id { get; set; }
         public string Name { get; set; }
         public string DbConnectionString { get; set; }
-        public string DefaultConfigsForQueries { get; set; }
         public string EnvVariables { get; set; }
-        public string Documentation { get; set; }
-        public int? UsersLimit { get; set; }
-        public string InviteLink { get; set; }
+        //public string Documentation { get; set; }
+        //public string DefaultConfigsForQueries { get; set; }
+        
+        //public int? UsersLimit { get; set; }
+        //public string InviteLink { get; set; }
         public ICollection<Collection> Collections { get; set; }
 
         public Guid? UserId { get; set; }

@@ -55,9 +55,10 @@ namespace Teza
                     b => b.MigrationsAssembly("Teza"));
             });
 
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddHttpClient<IAuthService, AuthService>(c =>
             {
-                c.BaseAddress = new Uri("http://localhost:8080/api/Account/Users/"); // localhost:8080 / 22695
+                c.BaseAddress = new Uri(Configuration["AuthService"]);
             });
             services.AddScoped<AuthorizationAttribute>();
             services.AddControllers(options =>
@@ -67,6 +68,14 @@ namespace Teza
             })
                .AddNewtonsoftJson(options =>
                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(Configuration["AuthService"]);
+                });
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -118,6 +127,7 @@ namespace Teza
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Teza v1"));
 
             app.UseRouting();
+            app.UseCors();
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -12,29 +12,29 @@ namespace Data.Repositories.Implementation
     public class UnitOfWork : IUnitOfWork
     {
         readonly RepositoryDbContext _dbContext;
-        CollectionRepository _collectionRepository;
-        FolderRepository _folderRepository;
-        HistoryRepository _historyRepository;
+        GenericRepository<Collection> _collectionRepository;
+        GenericRepository<Folder> _folderRepository;
+        GenericRepository<History> _historyRepository;
         QueryRepository _queryRepository;
-        WorkspaceRepository _workspaceRepository;
         UserRepository _userRepository;
+        WorkspaceRepository _workspaceRepository;
 
         public UnitOfWork(RepositoryDbContext dbContext) => _dbContext = dbContext;
 
-        public CollectionRepository CollectionRepository
+        public IGenericRepository<Collection> CollectionRepository
         {
             get
             {
-                _collectionRepository ??= new CollectionRepository(_dbContext);
+                _collectionRepository ??= new GenericRepository<Collection>(_dbContext);
                 return _collectionRepository;
             }
         }
 
-        public FolderRepository FolderRepository
+        public IGenericRepository<Folder> FolderRepository
         {
             get
             {
-                _folderRepository ??= new FolderRepository(_dbContext);
+                _folderRepository ??= new GenericRepository<Folder>(_dbContext);
                 return _folderRepository;
             }
         }
@@ -66,11 +66,11 @@ namespace Data.Repositories.Implementation
             }
         }
 
-        public HistoryRepository HistoryRepository
+        public IGenericRepository<History> HistoryRepository
         {
             get
             {
-                _historyRepository ??= new HistoryRepository(_dbContext);
+                _historyRepository ??= new GenericRepository<History>(_dbContext);
                 return _historyRepository;
             }
         }

@@ -8,19 +8,26 @@ namespace Teza.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "History",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_History", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Workspace",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     DbConnectionString = table.Column<string>(type: "text", nullable: true),
-                    DefaultConfigsForQueries = table.Column<string>(type: "text", nullable: true),
                     EnvVariables = table.Column<string>(type: "text", nullable: true),
                     Documentation = table.Column<string>(type: "text", nullable: true),
-                    UsersLimit = table.Column<int>(type: "integer", nullable: false),
-                    InviteLink = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Users = table.Column<string>(type: "text", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -33,10 +40,7 @@ namespace Teza.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    Documentation = table.Column<string>(type: "text", nullable: true),
-                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
-                    ShareLink = table.Column<string>(type: "text", nullable: true),
-                    WorkspaceId = table.Column<Guid>(type: "uuid", nullable: false)
+                    WorkspaceId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -46,7 +50,28 @@ namespace Teza.Migrations
                         column: x => x.WorkspaceId,
                         principalTable: "Workspace",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserName = table.Column<string>(type: "text", nullable: true),
+                    Role = table.Column<int>(type: "integer", nullable: true),
+                    WorkspaceId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_User", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Workspace_WorkspaceId",
+                        column: x => x.WorkspaceId,
+                        principalTable: "Workspace",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -55,8 +80,7 @@ namespace Teza.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    Documentation = table.Column<string>(type: "text", nullable: true),
-                    CollectionId = table.Column<Guid>(type: "uuid", nullable: false)
+                    CollectionId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,7 +90,7 @@ namespace Teza.Migrations
                         column: x => x.CollectionId,
                         principalTable: "Collection",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -76,12 +100,10 @@ namespace Teza.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     RawSql = table.Column<string>(type: "text", nullable: true),
-                    DefaultResponseWithLimit = table.Column<string>(type: "text", nullable: true),
-                    Documentation = table.Column<string>(type: "text", nullable: true),
-                    LastExecuteTime = table.Column<double>(type: "double precision", nullable: false),
-                    Count = table.Column<int>(type: "integer", nullable: false),
-                    Size = table.Column<int>(type: "integer", nullable: false),
-                    FolderId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Count = table.Column<int>(type: "integer", nullable: true),
+                    Size = table.Column<int>(type: "integer", nullable: true),
+                    CollectionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FolderId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -90,25 +112,6 @@ namespace Teza.Migrations
                         name: "FK_Query_Folder_FolderId",
                         column: x => x.FolderId,
                         principalTable: "Folder",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "History",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Action = table.Column<int>(type: "integer", nullable: false),
-                    QueryId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_History", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_History_Query_QueryId",
-                        column: x => x.QueryId,
-                        principalTable: "Query",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -124,14 +127,14 @@ namespace Teza.Migrations
                 column: "CollectionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_History_QueryId",
-                table: "History",
-                column: "QueryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Query_FolderId",
                 table: "Query",
                 column: "FolderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_WorkspaceId",
+                table: "User",
+                column: "WorkspaceId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -141,6 +144,9 @@ namespace Teza.Migrations
 
             migrationBuilder.DropTable(
                 name: "Query");
+
+            migrationBuilder.DropTable(
+                name: "User");
 
             migrationBuilder.DropTable(
                 name: "Folder");

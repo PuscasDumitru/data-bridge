@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Data.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -14,8 +15,6 @@ namespace Data.Entities
         public Guid? Id { get; set; }
         //public int UserId { get; set; }
         //public int QueryId { get; set; }
-        public Action Action { get; set; }
-        public Query Query { get; set; }
-        //public virtual User User { get; set; }
+        //public Action Action { get; set; }
     }
 }

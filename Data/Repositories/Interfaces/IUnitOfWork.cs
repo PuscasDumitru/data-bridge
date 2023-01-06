@@ -11,9 +11,9 @@ namespace Data.Repositories.Interfaces
 {
     public interface IUnitOfWork
     {
-        CollectionRepository CollectionRepository { get; }
-        FolderRepository FolderRepository { get; }
-        HistoryRepository HistoryRepository { get; }
+        IGenericRepository<Collection> CollectionRepository { get; }
+        IGenericRepository<Folder> FolderRepository { get; }
+        IGenericRepository<History> HistoryRepository { get; }
         QueryRepository QueryRepository { get; }
         WorkspaceRepository WorkspaceRepository { get; }
         UserRepository UserRepository { get; }
