@@ -19,6 +19,27 @@ namespace Data
             modelBuilder
                .Entity<Workspace>()
                .Property(e => e.Id);
+
+            modelBuilder
+                .Entity<Workspace>()
+                .HasIndex(workspace => workspace.Name)
+                .IsUnique();
+
+            modelBuilder
+                .Entity<Collection>()
+                .HasIndex(collection => collection.Name)
+                .IsUnique();
+
+            modelBuilder
+                .Entity<Folder>()
+                .HasIndex(folder => folder.Name)
+                .IsUnique();
+
+            modelBuilder
+                .Entity<Query>()
+                .HasIndex(query => query.Name)
+                .IsUnique();
+
             modelBuilder.HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
         }
 

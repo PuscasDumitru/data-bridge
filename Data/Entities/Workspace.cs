@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Data.Entities
 {
-    [JsonObject(IsReference = true)]
+    [JsonObject(IsReference = false)]
     public class Workspace
     {
         public Workspace()
@@ -17,6 +17,7 @@ namespace Data.Entities
         }
 
         public Guid? Id { get; set; }
+        
         public string Name { get; set; }
         public string DbConnectionString { get; set; }
         public string EnvVariables { get; set; }

@@ -3,15 +3,17 @@ using System;
 using Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    partial class RepositoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230107231050_MakeWksNameUnique")]
+    partial class MakeWksNameUnique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,9 +35,6 @@ namespace Teza.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.HasIndex("WorkspaceId");
 
                     b.ToTable("Collection");
@@ -56,9 +55,6 @@ namespace Teza.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CollectionId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Folder");
                 });
@@ -105,9 +101,6 @@ namespace Teza.Migrations
 
                     b.HasIndex("FolderId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Query");
                 });
 
@@ -117,14 +110,14 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
                     b.Property<int?>("Role")
                         .HasColumnType("integer");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("WorkspaceId")
                         .HasColumnType("uuid");

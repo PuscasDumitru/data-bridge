@@ -12,9 +12,9 @@ namespace Data.Repositories.Implementation
     {
         public UserRepository(RepositoryDbContext repositoryContext) : base(repositoryContext) { }
 
-        public async Task<User> GetUserByIdAsync(Guid userId)
+        public async Task<User> GetUserByEmailAsync(string email)
         {
-            return await GetByCondition(user => user.UserId.Equals(userId))
+            return await GetByCondition(user => user.Email == email)
                 .FirstOrDefaultAsync();
         }
     }

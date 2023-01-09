@@ -6,6 +6,6 @@ namespace Teza.Services
 {
     public interface IAuthService
     {
-        Task<AuthServiceModel> GetUser(Guid userId);
+        Task<AuthServiceModel> GetUser(string email);
     }
 }

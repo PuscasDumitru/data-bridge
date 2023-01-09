@@ -22,9 +22,9 @@ namespace Data.Repositories.Implementation
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Workspace>> GetWorkspacesByUserIdAsync(Guid userId)
+        public async Task<IEnumerable<Workspace>> GetWorkspacesByEmailAsync(string email)
         {
-            return await GetByCondition(workspace => workspace.Collaborators.Any(user => user.UserId == userId))
+            return await GetByCondition(workspace => workspace.Collaborators.Any(user => user.Email == email))
                 .Include(col => col.Collaborators)
                 .Include(c => c.Collections)
                 .ThenInclude(f => f.Folders)

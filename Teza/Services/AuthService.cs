@@ -16,17 +16,15 @@ namespace Teza.Services
             _httpClient = httpClient;
         }
 
-        public async Task<AuthServiceModel> GetUser(Guid userId)
+        public async Task<AuthServiceModel> GetUser(string email)
         {
-            var apiUrl = $"{userId}";
+            var apiUrl = $"{email}";
             var response = _httpClient.GetAsync(apiUrl).Result;
             var json = response.Content.ReadAsStringAsync().Result;
 
-            var obj2 = JsonConvert.DeserializeObject<AuthServiceModel>(json);
-            //var obj = JsonConvert.DeserializeObject<SuccessModel>(json);
-            Console.WriteLine("Problem here");
+            var userResult = JsonConvert.DeserializeObject<AuthServiceModel>(json);
             
-            return obj2;
+            return userResult;
         }
     }
 }

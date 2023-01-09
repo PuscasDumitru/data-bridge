@@ -18,6 +18,7 @@ using Teza.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Newtonsoft.Json.Converters;
 using Teza.Extensions;
 using Teza.Services;
 
@@ -51,7 +52,7 @@ namespace Teza
             services.AddDbContext<RepositoryDbContext>(options =>
             {
                 options.UseNpgsql(
-                    Configuration.GetConnectionString("DefaultConnection"), 
+                    Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Teza"));
             });
 
@@ -62,12 +63,18 @@ namespace Teza
             });
             services.AddScoped<AuthorizationAttribute>();
             services.AddControllers(options =>
-            {
-                options.Filters.Add<ExceptionAttribute>();
-                options.Filters.Add<ValidateModelAttribute>();
-            })
-               .AddNewtonsoftJson(options =>
-                  options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                {
+                    options.Filters.Add<ExceptionAttribute>();
+                    options.Filters.Add<ValidateModelAttribute>();
+                })
+                .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                        options.SerializerSettings.PreserveReferencesHandling =
+                            Newtonsoft.Json.PreserveReferencesHandling.None;
+                        options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    });
+            
 
             services.AddCors(options =>
             {
