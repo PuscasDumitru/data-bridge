@@ -103,26 +103,15 @@ namespace Teza.Controllers
                         };
                     }
 
-                    var collaboratorToAdd = await _unitOfWork.UserRepository.GetUserByEmailAsync(email);
-
-                    if (collaboratorToAdd == null || collaboratorToAdd.WorkspaceId != null)
+                    var collaboratorToAdd = new User
                     {
-                        collaboratorToAdd = new User
-                        {
-                            UserId = userGuid,
-                            Email = userResult.data.Email,
-                            WorkspaceId = workspace.Id,
-                            Role = Role.Collaborator
-                        };
-                        _unitOfWork.UserRepository.Create(collaboratorToAdd);
-                    }
-
-                    else
-                    {
-                        collaboratorToAdd.WorkspaceId = workspace.Id;
-                        _unitOfWork.UserRepository.Update(collaboratorToAdd);
-                    }
-
+                        UserId = userGuid,
+                        Email = userResult.data.Email,
+                        WorkspaceId = workspace.Id,
+                        Role = Role.Collaborator
+                    };
+                    _unitOfWork.UserRepository.Create(collaboratorToAdd);
+                    
                     workspace.Collaborators.Add(collaboratorToAdd);
                     await _unitOfWork.SaveChangesAsync();
 
@@ -243,11 +232,7 @@ namespace Teza.Controllers
             }
             catch (Exception e)
             {
-                return new ErrorModel
-                {
-                    error = e.Message,
-                    success = false
-                };
+                return ExceptionHandlerExtension.HandleException(e);
             }
         }
 
@@ -324,11 +309,7 @@ namespace Teza.Controllers
             }
             catch (Exception e)
             {
-                return new ErrorModel
-                {
-                    error = e.Message,
-                    success = false
-                };
+                return ExceptionHandlerExtension.HandleException(e);
             }
         }
 
@@ -977,24 +958,15 @@ namespace Teza.Controllers
                     }
 
                     workspace.UserId = userGuid;
-                    var collaboratorToAdd = await _unitOfWork.UserRepository.GetUserByEmailAsync(email);
-
-                    if (collaboratorToAdd == null)
+                    var collaboratorToAdd = new User
                     {
-                        collaboratorToAdd = new User
-                        {
-                            UserId = userGuid,
-                            Email = userResult.data.Email,
-                            WorkspaceId = workspace.Id,
-                            Role = Role.Admin
-                        };
-                        _unitOfWork.UserRepository.Create(collaboratorToAdd);
-                    }
+                        UserId = userGuid,
+                        Email = email,
+                        WorkspaceId = workspace.Id,
+                        Role = Role.Admin
+                    };
 
-                    else
-                    {
-                        _unitOfWork.UserRepository.Update(collaboratorToAdd);
-                    }
+                    _unitOfWork.UserRepository.Create(collaboratorToAdd);
 
                     workspace.Collaborators.Add(collaboratorToAdd);
 
