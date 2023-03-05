@@ -13,12 +13,11 @@ using Data.Repositories.Interfaces;
 using Teza.Models;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-using AutoMapper;
 using Data.DTOs;
 using Data.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Data.SqlClient;
+using Microsoft.CodeAnalysis.CSharp;
 using Newtonsoft.Json;
 using Teza.Extensions;
 using Teza.Filters;
@@ -32,13 +31,11 @@ namespace Teza.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAuthService _authService;
-        private readonly IMapper _mapper;
 
-        public WorkspaceController(RepositoryDbContext context, IAuthService authService, IMapper mapper)
+        public WorkspaceController(RepositoryDbContext context, IAuthService authService)
         {
             _unitOfWork = new UnitOfWork(context);
             _authService = authService;
-            _mapper = mapper;
         }
 
         [HttpPost("workspace/{workspaceId}/collaborator/{email}")]
@@ -143,19 +140,12 @@ namespace Teza.Controllers
         //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> UpdateRoleCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] string email,
-                                                                                        UpdateCollaboratorRoleDto role)
+                                                                                        UpdateCollaboratorRoleDto stringRole)
         {
             try
             {
-                if (Enum.GetName(typeof(EntityType), role.Role) is null)
-                {
-                    return new ErrorModel
-                    {
-                        error = "There's no such role for users.",
-                        success = false
-                    };
-                }
-
+                var role = (Role?)Enum.Parse(typeof(Role), stringRole.Role);
+                
                 if (HttpContext.User.Identity is ClaimsIdentity identity)
                 {
                     var userEmail = identity.FindFirst("userEmail").Value;
@@ -202,7 +192,7 @@ namespace Teza.Controllers
                     var collaborator = workspace.Collaborators
                         .FirstOrDefault(x => x.Email == email && x.WorkspaceId == workspace.Id);
 
-                    if (collaborator.Role == role.Role)
+                    if (collaborator.Role == role)
                     {
                         return new ErrorModel()
                         {
@@ -211,7 +201,7 @@ namespace Teza.Controllers
                         };
                     }
 
-                    collaborator.Role = role.Role;
+                    collaborator.Role = role;
                     _unitOfWork.UserRepository.Update(collaborator);
 
                     await _unitOfWork.SaveChangesAsync();
@@ -426,11 +416,21 @@ namespace Teza.Controllers
                             success = false
                         };
                     }
-                    
+
                     switch (typeIdentifier.Type)
                     {
                         case EntityType.collection:
                             var collection = JsonConvert.DeserializeObject<Collection>(createResourceDto.ToString());
+
+                            if (!await IsCollectionUnique(workspaceId, collection))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a collection with such a name in this workspace.",
+                                    success = false
+                                };
+                            }
+
                             collection.WorkspaceId = workspaceId;
 
                             _unitOfWork.CollectionRepository.Create(collection);
@@ -449,6 +449,15 @@ namespace Teza.Controllers
                                 return new ErrorModel
                                 {
                                     error = "There's no collection with such an ID",
+                                    success = false
+                                };
+                            }
+
+                            if (!IsFolderUnique(existingCollection, folder.Name, (Guid)folder.Id))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a folder with such a name in this collection.",
                                     success = false
                                 };
                             }
@@ -486,6 +495,15 @@ namespace Teza.Controllers
                                 };
                             }
 
+                            if (!IsQueryUnique(folderContainingThisQuery, query.Name, (Guid)query.Id))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a query with such a name in this folder.",
+                                    success = false
+                                };
+                            }
+
                             _unitOfWork.QueryRepository.Create(query);
                             folderContainingThisQuery.Queries.Add(query);
                             await _unitOfWork.SaveChangesAsync();
@@ -494,7 +512,6 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        data = createResourceDto,
                         message = "Resource created",
                         success = true
                     };
@@ -543,7 +560,7 @@ namespace Teza.Controllers
                             error = "The logged user is not a part of this workspace."
                         };
                     }
-                    
+
                     var typeIdentifier = JsonConvert.DeserializeObject<ResourceDto>(renameResourceDto.ToString());
 
                     if (Enum.GetName(typeof(EntityType), typeIdentifier.Type) is null)
@@ -554,12 +571,12 @@ namespace Teza.Controllers
                             success = false
                         };
                     }
-                    
+
                     switch (typeIdentifier.Type)
                     {
                         case EntityType.collection:
                             var collection = JsonConvert.DeserializeObject<Collection>(renameResourceDto.ToString());
-
+                            
                             var existingCollection =
                                 workspace.Collections.FirstOrDefault(col => col.Id == collection.Id);
 
@@ -568,6 +585,15 @@ namespace Teza.Controllers
                                 return new ErrorModel
                                 {
                                     error = "There's no collection with such an ID",
+                                    success = false
+                                };
+                            }
+
+                            if (!await IsCollectionUnique(workspaceId, collection))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a collection with such a name in this workspace.",
                                     success = false
                                 };
                             }
@@ -592,7 +618,7 @@ namespace Teza.Controllers
                                     success = false
                                 };
                             }
-
+                            
                             var existingFolder =
                                 collectionWithFolder.Folders.FirstOrDefault(fol => fol.Id == folder.Id);
 
@@ -601,6 +627,15 @@ namespace Teza.Controllers
                                 return new ErrorModel
                                 {
                                     error = "There's no folder with such an ID",
+                                    success = false
+                                };
+                            }
+
+                            if (!IsFolderUnique(collectionWithFolder, folder.Name, (Guid)folder.Id))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a folder with such a name in this collection.",
                                     success = false
                                 };
                             }
@@ -650,6 +685,15 @@ namespace Teza.Controllers
                                 };
                             }
 
+                            if (!IsQueryUnique(folderContainingThisQuery, query.Name, (Guid)query.Id))
+                            {
+                                return new ErrorModel
+                                {
+                                    error = "There's already a query with such a name in this folder.",
+                                    success = false
+                                };
+                            }
+
                             existingQuery.Name = query.Name;
                             _unitOfWork.QueryRepository.Update(existingQuery);
 
@@ -659,7 +703,6 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        data = renameResourceDto,
                         message = "Resource renamed",
                         success = true
                     };
@@ -677,7 +720,7 @@ namespace Teza.Controllers
             }
         }
 
-        [HttpDelete("workspace/{workspaceId}/delete-resource")]
+        [HttpPost("workspace/{workspaceId}/delete-resource")]
         //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId, object renameResourceDto)
@@ -718,7 +761,7 @@ namespace Teza.Controllers
                             success = false
                         };
                     }
-                    
+
                     switch (typeIdentifier.Type)
                     {
                         case EntityType.collection:
@@ -823,7 +866,6 @@ namespace Teza.Controllers
 
                     return new SuccessModel
                     {
-                        data = renameResourceDto,
                         message = "Resource deleted",
                         success = true
                     };
@@ -907,6 +949,15 @@ namespace Teza.Controllers
                         };
                     }
 
+                    if (!IsQueryUnique(folderContainingThisQuery, query.Name, (Guid)query.Id))
+                    {
+                        return new ErrorModel
+                        {
+                            error = "There's already a query with such a name in this folder.", 
+                            success = false
+                        };
+                    }
+
                     var updatedQuery = _unitOfWork.QueryRepository.UpdateEntity(existingQuery, query);
                     _unitOfWork.QueryRepository.Update(updatedQuery);
 
@@ -945,6 +996,15 @@ namespace Teza.Controllers
                     var userId = identity.FindFirst("userId").Value;
                     var userGuid = new Guid(userId);
                     var email = identity.FindFirst("userEmail").Value;
+
+                    if (!await IsWorkspaceUnique(userGuid, email, workspace))
+                    {
+                        return new ErrorModel()
+                        {
+                            success = false,
+                            error = "There's already a workspace with such a name created by this user."
+                        };
+                    }
 
                     var userResult = await _authService.GetUser(email);
 
@@ -1004,6 +1064,7 @@ namespace Teza.Controllers
                 {
                     IEnumerable<Claim> claims = identity.Claims;
                     var userId = identity.FindFirst("userId").Value;
+                    var userGuid = new Guid(userId);
                     var userEmail = identity.FindFirst("userEmail").Value;
 
                     var workspaceToUpdate = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
@@ -1016,6 +1077,8 @@ namespace Teza.Controllers
                             success = false
                         };
                     }
+
+                    workspace.Id = workspaceId;
 
                     if (!UserExistsInWorkspace(workspaceToUpdate, userEmail))
                     {
@@ -1033,6 +1096,15 @@ namespace Teza.Controllers
                         {
                             success = false,
                             error = "The logged user is not an admin to do this action."
+                        };
+                    }
+
+                    if (!await IsWorkspaceUnique(userGuid, userEmail, workspace))
+                    {
+                        return new ErrorModel()
+                        {
+                            success = false,
+                            error = "There's already a workspace with such a name created by this user."
                         };
                     }
 
@@ -1065,7 +1137,7 @@ namespace Teza.Controllers
         [HttpDelete("workspace/{workspaceId}")]
         //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
-        public async Task<ActionResult<object>> DeleteWorspace([FromRoute] Guid workspaceId)
+        public async Task<ActionResult<object>> DeleteWorkspace([FromRoute] Guid workspaceId)
         {
             try
             {
@@ -1152,6 +1224,57 @@ namespace Teza.Controllers
             }
 
             return false;
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<bool> IsWorkspaceUnique(Guid userId, string userEmail, Workspace updatedWorkspace)
+        {
+            var userWorkspaces = await _unitOfWork.WorkspaceRepository.GetWorkspacesByEmailAsync(userEmail);
+
+            if (userWorkspaces.Any(workspace => workspace.UserId == userId && 
+                                                workspace.Name == updatedWorkspace.Name && workspace.Id != updatedWorkspace.Id))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<bool> IsCollectionUnique(Guid workspaceId, Collection updatedCollection)
+        {
+            var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+            if (workspace.Collections.Any(collection => collection.Name == updatedCollection.Name && collection.Id != updatedCollection.Id))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public bool IsFolderUnique(Collection collection, string folderName, Guid folderId)
+        {
+            
+            if (collection.Folders.Any(folder => folder.Name == folderName && folder.Id != folderId))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public bool IsQueryUnique(Folder folder, string queryName, Guid queryId)
+        {
+
+            if (folder.Queries.Any(query => query.Name == queryName && query.Id != queryId))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

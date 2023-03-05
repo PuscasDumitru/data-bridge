@@ -9,6 +9,6 @@ namespace Data.DTOs
 {
     public class UpdateCollaboratorRoleDto
     {
-        public Role Role { get; set; }
+        public string Role { get; set; }
     }
 }

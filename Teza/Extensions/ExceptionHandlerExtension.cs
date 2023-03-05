@@ -31,7 +31,7 @@ namespace Teza.Extensions
                 };
             }
 
-            else if (ex.Message.Contains("Data.Enums.Roles"))
+            if (ex.Message.Contains("Data.Enums.Roles") || ex.Message.Contains("Requested value"))
             {
                 return new ErrorModel
                 {
@@ -40,7 +40,7 @@ namespace Teza.Extensions
                 };
             }
 
-            else if (ex.Message.Contains("Error converting"))
+            if (ex.Message.Contains("Error converting"))
             {
                 Regex regex = new Regex("Path '[^']*'", RegexOptions.IgnoreCase);
                 var property = regex.Match(ex.Message).Value.Replace("Path", "");

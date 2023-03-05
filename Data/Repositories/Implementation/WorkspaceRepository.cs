@@ -18,7 +18,7 @@ namespace Data.Repositories.Implementation
                 .Include(col => col.Collaborators)
                 .Include(c => c.Collections)
                 .ThenInclude(f => f.Folders)
-                .ThenInclude(q => q.Queries)
+                .ThenInclude(q => q.Queries)    
                 .FirstOrDefaultAsync();
         }
 
@@ -32,6 +32,6 @@ namespace Data.Repositories.Implementation
                 .ToListAsync();
 
         }
-   
+        
     }
 }

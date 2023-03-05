@@ -55,8 +55,7 @@ namespace Teza
                     Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Teza"));
             });
-
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
             services.AddHttpClient<IAuthService, AuthService>(c =>
             {
                 c.BaseAddress = new Uri(Configuration["AuthService"]);
