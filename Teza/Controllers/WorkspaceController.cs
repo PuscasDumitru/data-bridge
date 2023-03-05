@@ -201,6 +201,16 @@ namespace Teza.Controllers
                         };
                     }
 
+                    if (collaborator.Role == Role.Admin && role != Role.Admin &&
+                        workspace.Collaborators.Count(x => x.Role == Role.Admin) == 1)
+                    {
+                        return new ErrorModel()
+                        {
+                            success = false,
+                            error = "You cannot leave a workspace without an admin"
+                        };
+                    }
+
                     collaborator.Role = role;
                     _unitOfWork.UserRepository.Update(collaborator);
 
@@ -278,6 +288,15 @@ namespace Teza.Controllers
 
                     var collaboratorToRemove = workspace.Collaborators
                         .FirstOrDefault(x => x.Email == email && x.WorkspaceId == workspace.Id);
+
+                    if (workspace.Collaborators.Count(x => x.Role == Role.Admin) == 1)
+                    {
+                        return new ErrorModel()
+                        {
+                            success = false,
+                            error = "You're the only admin left, please give admin rights to at least one user before leaving the workspace."
+                        };
+                    }
 
                     _unitOfWork.UserRepository.Delete(collaboratorToRemove);
                     workspace.Collaborators.Remove(collaboratorToRemove);
