@@ -95,6 +95,9 @@ namespace Teza.Migrations
                     b.Property<int?>("Size")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Snapshot")
+                        .HasColumnType("jsonb");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FolderId");

@@ -289,7 +289,7 @@ namespace Teza.Controllers
                     var collaboratorToRemove = workspace.Collaborators
                         .FirstOrDefault(x => x.Email == email && x.WorkspaceId == workspace.Id);
 
-                    if (workspace.Collaborators.Count(x => x.Role == Role.Admin) == 1)
+                    if (workspace.Collaborators.Count(x => x.Role == Role.Admin) == 1 && userEmail == email)
                     {
                         return new ErrorModel()
                         {
@@ -472,7 +472,7 @@ namespace Teza.Controllers
                                 };
                             }
 
-                            if (!IsFolderUnique(existingCollection, folder.Name, (Guid)folder.Id))
+                            if (!IsFolderUnique(existingCollection, folder.Name, new Guid()))
                             {
                                 return new ErrorModel
                                 {
@@ -514,7 +514,7 @@ namespace Teza.Controllers
                                 };
                             }
 
-                            if (!IsQueryUnique(folderContainingThisQuery, query.Name, (Guid)query.Id))
+                            if (!IsQueryUnique(folderContainingThisQuery, query.Name, new Guid()))
                             {
                                 return new ErrorModel
                                 {
