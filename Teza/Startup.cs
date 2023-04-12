@@ -60,6 +60,10 @@ namespace Teza
             {
                 c.BaseAddress = new Uri(Configuration["AuthService"]);
             });
+            services.AddHttpClient<IMailingService, MailingService>(c =>
+            {
+                c.BaseAddress = new Uri(Configuration["MailingService"]);
+            });
             services.AddScoped<AuthorizationAttribute>();
             services.AddControllers(options =>
                 {
@@ -80,6 +84,7 @@ namespace Teza
                 options.AddDefaultPolicy(builder =>
                 {
                     builder.WithOrigins(Configuration["AuthService"]);
+                    builder.WithOrigins(Configuration["MailingService"]);
                 });
             });
 

@@ -29,6 +29,7 @@ namespace Data
         public DbSet<Workspace> Workspace { get; set; }
         public DbSet<History> History { get; set; }
         public DbSet<User> User { get; set; }
+        public DbSet<UserEmailConfirmation> UserEmailConfirmation { get; set; }
 
     }
 }

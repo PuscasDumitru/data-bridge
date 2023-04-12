@@ -18,6 +18,7 @@ namespace Data.Repositories.Implementation
         QueryRepository _queryRepository;
         UserRepository _userRepository;
         WorkspaceRepository _workspaceRepository;
+        UserEmailConfirmationRepository _userEmailConfirmationRepository;
 
         public UnitOfWork(RepositoryDbContext dbContext) => _dbContext = dbContext;
 
@@ -63,6 +64,15 @@ namespace Data.Repositories.Implementation
             {
                 _userRepository ??= new UserRepository(_dbContext);
                 return _userRepository;
+            }
+        }
+
+        public UserEmailConfirmationRepository UserEmailConfirmationRepository
+        {
+            get
+            {
+                _userEmailConfirmationRepository ??= new UserEmailConfirmationRepository(_dbContext);
+                return _userEmailConfirmationRepository;
             }
         }
 
