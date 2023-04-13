@@ -11,6 +11,7 @@ namespace Data.Entities
         public Guid Id { get; set; }
         public string Email { get; set; }
         public string EmailConfirmationToken { get; set; }
+        public bool IsEmailConfirmed { get; set; }
         public DateTime ValidTo { get; set; }
     }
 }

@@ -51,33 +51,46 @@ namespace Teza.Controllers
                     await _unitOfWork.UserEmailConfirmationRepository.GetEmailConfirmationByTokenAsync(
                         confirmationToken);
 
-                if (confirmation != null)
+                if (confirmation != null && email == confirmation.Email)
                 {
-                    if (confirmation.ValidTo >= DateTime.UtcNow)
+                    if (confirmation.IsEmailConfirmed)
                     {
-                        var collaboratorToAdd = new User
+                        return new ErrorModel
                         {
-                            Email = email,
-                            WorkspaceId = workspace.Id,
-                            Role = Role.Collaborator
-                        };
-                        _unitOfWork.UserRepository.Create(collaboratorToAdd);
-
-                        workspace.Collaborators.Add(collaboratorToAdd);
-                        await _unitOfWork.SaveChangesAsync();
-
-                        return new SuccessModel
-                        {
-                            data = null,
-                            message = $"{email} has been added to the workspace {workspace.Name} successfully!",
-                            success = true
+                            error = "The invitation has already been accepted.",
+                            success = false
                         };
                     }
 
-                    return new ErrorModel
+                    if (confirmation.ValidTo < DateTime.UtcNow)
                     {
-                        error = "The confirmation link has expired.",
-                        success = false
+                        return new ErrorModel
+                        {
+                            error = "The confirmation link has expired.",
+                            success = false
+                        };
+                    }
+
+                    var collaboratorToAdd = new User
+                    {
+                        Email = email,
+                        WorkspaceId = workspace.Id,
+                        Role = Role.Collaborator
+                    };
+
+                    confirmation.IsEmailConfirmed = true;
+
+                    _unitOfWork.UserEmailConfirmationRepository.Update(confirmation);
+                    _unitOfWork.UserRepository.Create(collaboratorToAdd);
+
+                    workspace.Collaborators.Add(collaboratorToAdd);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    return new SuccessModel
+                    {
+                        data = null,
+                        message = $"{email} has been added to the workspace {workspace.Name} successfully!",
+                        success = true
                     };
                 }
 
@@ -159,7 +172,7 @@ namespace Teza.Controllers
                             error = "There's no user with such an email"
                         };
                     }
-                    
+
                     var inviteIsSent = _mailingService.SendMail(email, workspace.Name, workspaceId, _unitOfWork.UserEmailConfirmationRepository);
 
                     if (inviteIsSent)
@@ -1030,7 +1043,7 @@ namespace Teza.Controllers
                         };
                     }
 
-                    if (!IsQueryUnique(folderContainingThisQuery, query.Name, (Guid)query.Id))
+                    if (!IsQueryUnique(folderContainingThisQuery, query.Name, queryId))
                     {
                         return new ErrorModel
                         {

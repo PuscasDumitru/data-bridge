@@ -142,6 +142,9 @@ namespace Teza.Migrations
                     b.Property<string>("EmailConfirmationToken")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("ValidTo")
                         .HasColumnType("timestamp with time zone");
 
