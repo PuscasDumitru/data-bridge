@@ -19,6 +19,37 @@ namespace Teza.Migrations
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
+            modelBuilder.Entity("Data.Entities.ActivityHistory", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ActionPerformedTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("ActivityHistory");
+                });
+
             modelBuilder.Entity("Data.Entities.Collection", b =>
                 {
                     b.Property<Guid?>("Id")
@@ -57,17 +88,6 @@ namespace Teza.Migrations
                     b.ToTable("Folder");
                 });
 
-            modelBuilder.Entity("Data.Entities.History", b =>
-                {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("History");
-                });
-
             modelBuilder.Entity("Data.Entities.Query", b =>
                 {
                     b.Property<Guid?>("Id")
@@ -79,6 +99,9 @@ namespace Teza.Migrations
 
                     b.Property<int?>("Count")
                         .HasColumnType("integer");
+
+                    b.Property<Guid?>("CronId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Documentation")
                         .HasColumnType("text");
@@ -146,7 +169,7 @@ namespace Teza.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("ValidTo")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
@@ -158,6 +181,9 @@ namespace Teza.Migrations
                     b.Property<Guid?>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int?>("DataBaseType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("DbConnectionString")
                         .HasColumnType("text");
@@ -177,6 +203,15 @@ namespace Teza.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Workspace");
+                });
+
+            modelBuilder.Entity("Data.Entities.ActivityHistory", b =>
+                {
+                    b.HasOne("Data.Entities.Workspace", "Workspace")
+                        .WithMany("ActivityHistories")
+                        .HasForeignKey("WorkspaceId");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("Data.Entities.Collection", b =>
@@ -227,6 +262,8 @@ namespace Teza.Migrations
 
             modelBuilder.Entity("Data.Entities.Workspace", b =>
                 {
+                    b.Navigation("ActivityHistories");
+
                     b.Navigation("Collaborators");
 
                     b.Navigation("Collections");

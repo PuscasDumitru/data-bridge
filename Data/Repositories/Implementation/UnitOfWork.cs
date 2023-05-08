@@ -14,7 +14,7 @@ namespace Data.Repositories.Implementation
         readonly RepositoryDbContext _dbContext;
         GenericRepository<Collection> _collectionRepository;
         GenericRepository<Folder> _folderRepository;
-        GenericRepository<History> _historyRepository;
+        GenericRepository<ActivityHistory> _activityHistoryRepository;
         QueryRepository _queryRepository;
         UserRepository _userRepository;
         WorkspaceRepository _workspaceRepository;
@@ -76,12 +76,12 @@ namespace Data.Repositories.Implementation
             }
         }
 
-        public IGenericRepository<History> HistoryRepository
+        public IGenericRepository<ActivityHistory> ActivityHistoryRepository
         {
             get
             {
-                _historyRepository ??= new GenericRepository<History>(_dbContext);
-                return _historyRepository;
+                _activityHistoryRepository ??= new GenericRepository<ActivityHistory>(_dbContext);
+                return _activityHistoryRepository;
             }
         }
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>

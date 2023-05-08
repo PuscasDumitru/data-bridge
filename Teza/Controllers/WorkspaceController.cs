@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using Teza.Extensions;
 using Teza.Filters;
 using Teza.Services;
+using System.Linq.Expressions;
 
 namespace Teza.Controllers
 {
@@ -84,6 +85,20 @@ namespace Teza.Controllers
                     _unitOfWork.UserRepository.Create(collaboratorToAdd);
 
                     workspace.Collaborators.Add(collaboratorToAdd);
+
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = email,
+                        EntityType = EntityType.user,
+                        UserName = email,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.joined,
+                        WorkspaceId = workspaceId
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -112,7 +127,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace/{workspaceId}/collaborator/{email}")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> AddCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] string email)
         {
@@ -177,6 +191,19 @@ namespace Teza.Controllers
 
                     if (inviteIsSent)
                     {
+                        var activityHistory = new ActivityHistory
+                        {
+                            EntityName = email,
+                            EntityType = EntityType.user,
+                            UserName = userEmail,
+                            ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                            Action = Data.Enums.Action.invited,
+                            WorkspaceId = workspaceId
+                        };
+
+                        _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                        workspace.ActivityHistories.Add(activityHistory);
+
                         await _unitOfWork.SaveChangesAsync();
 
                         return new SuccessModel
@@ -212,7 +239,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace/{workspaceId}/collaborator/{email}/update-role")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> UpdateRoleCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] string email,
                                                                                         UpdateCollaboratorRoleDto stringRole)
@@ -289,6 +315,19 @@ namespace Teza.Controllers
                     collaborator.Role = role;
                     _unitOfWork.UserRepository.Update(collaborator);
 
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = email,
+                        EntityType = EntityType.user,
+                        UserName = userEmail,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.edited,
+                        WorkspaceId = workspaceId
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -312,7 +351,6 @@ namespace Teza.Controllers
         }
 
         [HttpDelete("workspace/{workspaceId}/collaborator/{email}")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> RemoveCollaboratorAsync([FromRoute] Guid workspaceId, [FromRoute] string email)
         {
@@ -375,6 +413,20 @@ namespace Teza.Controllers
 
                     _unitOfWork.UserRepository.Delete(collaboratorToRemove);
                     workspace.Collaborators.Remove(collaboratorToRemove);
+
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = email,
+                        EntityType = EntityType.user,
+                        UserName = userEmail,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.removed,
+                        WorkspaceId = workspaceId
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -397,8 +449,58 @@ namespace Teza.Controllers
             }
         }
 
+        [HttpGet("workspace/{workspaceId}/activityHistory")]
+        [ServiceFilter(typeof(AuthorizationAttribute))]
+        public async Task<ActionResult<object>> GetActivityHistoryByWorkspaceIdAsync([FromRoute] Guid workspaceId, string collaborator, Data.Enums.Action? actionType, EntityType? resource)
+        {
+            try
+            {
+                var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                if (workspace is null)
+                {
+                    return new ErrorModel
+                    {
+                        error = "There's no workspace with such an ID",
+                        success = false
+                    };
+                }
+
+                var activityHistory = _unitOfWork.ActivityHistoryRepository.GetByCondition(x => x.WorkspaceId == workspaceId);
+
+                if (collaborator != null)
+                {
+                    activityHistory = activityHistory.Where(x => x.UserName == collaborator);
+                }
+
+                if (actionType != null)
+                {
+                    activityHistory = activityHistory.Where(x => x.Action == actionType);
+                }
+
+                if (resource != null)
+                {
+                    activityHistory = activityHistory.Where(x => x.EntityType == resource);
+                }
+
+                return new SuccessModel
+                {
+                    data = activityHistory.ToList(),
+                    message = $"Activity history of the workspace {workspace.Name} has been retrieved",
+                    success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new ErrorModel
+                {
+                    error = e.Message,
+                    success = false
+                };
+            }
+        }
+
         [HttpGet("workspaces")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> GetWorkspacesByUserAsync()
         {
@@ -470,7 +572,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace/{workspaceId}/create-resource")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Create([FromRoute] Guid workspaceId, object createResourceDto)
         {
@@ -529,6 +630,20 @@ namespace Teza.Controllers
 
                             _unitOfWork.CollectionRepository.Create(collection);
                             workspace.Collections.Add(collection);
+
+                            var activityHistory = new ActivityHistory
+                            {
+                                EntityName = collection.Name,
+                                EntityType = EntityType.collection,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.created,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
 
@@ -557,8 +672,21 @@ namespace Teza.Controllers
                             }
 
                             _unitOfWork.FolderRepository.Create(folder);
-
                             existingCollection.Folders.Add(folder);
+
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = folder.Name,
+                                EntityType = EntityType.folder,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.created,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
 
@@ -600,6 +728,20 @@ namespace Teza.Controllers
 
                             _unitOfWork.QueryRepository.Create(query);
                             folderContainingThisQuery.Queries.Add(query);
+
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = query.Name,
+                                EntityType = EntityType.query,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.created,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
                     }
@@ -625,7 +767,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace/{workspaceId}/rename-resource")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Rename([FromRoute] Guid workspaceId, object renameResourceDto)
         {
@@ -695,6 +836,19 @@ namespace Teza.Controllers
                             existingCollection.Name = collection.Name;
                             _unitOfWork.CollectionRepository.Update(existingCollection);
 
+                            var activityHistory = new ActivityHistory
+                            {
+                                EntityName = collection.Name,
+                                EntityType = EntityType.collection,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.renamed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
 
@@ -736,6 +890,19 @@ namespace Teza.Controllers
 
                             existingFolder.Name = folder.Name;
                             _unitOfWork.FolderRepository.Update(existingFolder);
+
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = folder.Name,
+                                EntityType = EntityType.folder,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.renamed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
 
                             await _unitOfWork.SaveChangesAsync();
                             break;
@@ -791,6 +958,19 @@ namespace Teza.Controllers
                             existingQuery.Name = query.Name;
                             _unitOfWork.QueryRepository.Update(existingQuery);
 
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = query.Name,
+                                EntityType = EntityType.query,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.renamed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
                     }
@@ -815,7 +995,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace/{workspaceId}/delete-resource")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> Delete([FromRoute] Guid workspaceId, object renameResourceDto)
         {
@@ -876,6 +1055,19 @@ namespace Teza.Controllers
                             _unitOfWork.CollectionRepository.Delete(existingCollection);
                             workspace.Collections.Remove(existingCollection);
 
+                            var activityHistory = new ActivityHistory
+                            {
+                                EntityName = collection.Name,
+                                EntityType = EntityType.collection,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.removed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
 
@@ -908,6 +1100,19 @@ namespace Teza.Controllers
 
                             _unitOfWork.FolderRepository.Delete(existingFolder);
                             collectionWithFolder.Folders.Remove(existingFolder);
+
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = folder.Name,
+                                EntityType = EntityType.folder,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.removed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
 
                             await _unitOfWork.SaveChangesAsync();
                             break;
@@ -954,6 +1159,19 @@ namespace Teza.Controllers
                             _unitOfWork.QueryRepository.Delete(existingQuery);
                             folderContainingThisQuery.Queries.Remove(existingQuery);
 
+                            activityHistory = new ActivityHistory
+                            {
+                                EntityName = query.Name,
+                                EntityType = EntityType.query,
+                                UserName = userEmail,
+                                ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                                Action = Data.Enums.Action.removed,
+                                WorkspaceId = workspaceId
+                            };
+
+                            _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                            workspace.ActivityHistories.Add(activityHistory);
+
                             await _unitOfWork.SaveChangesAsync();
                             break;
                     }
@@ -978,7 +1196,6 @@ namespace Teza.Controllers
         }
 
         [HttpPatch("workspace/{workspaceId}/query/{queryId}")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> UpdateQuery([FromRoute] Guid workspaceId, [FromRoute] Guid queryId, [FromBody] Query query)
         {
@@ -1055,6 +1272,19 @@ namespace Teza.Controllers
                     var updatedQuery = _unitOfWork.QueryRepository.UpdateEntity(existingQuery, query);
                     _unitOfWork.QueryRepository.Update(updatedQuery);
 
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = query.Name,
+                        EntityType = EntityType.query,
+                        UserName = userEmail,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.edited,
+                        WorkspaceId = workspaceId
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -1078,7 +1308,6 @@ namespace Teza.Controllers
         }
 
         [HttpPost("workspace")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> CreateWorkspace([FromBody] Workspace workspace)
         {
@@ -1121,10 +1350,23 @@ namespace Teza.Controllers
                     };
 
                     _unitOfWork.UserRepository.Create(collaboratorToAdd);
-
                     workspace.Collaborators.Add(collaboratorToAdd);
 
                     _unitOfWork.WorkspaceRepository.Create(workspace);
+
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = workspace.Name,
+                        EntityType = EntityType.workspace,
+                        UserName = email,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.created,
+                        WorkspaceId = workspace.Id
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -1148,7 +1390,6 @@ namespace Teza.Controllers
         }
 
         [HttpPatch("workspace/{workspaceId}")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> UpdateWorkspace([FromRoute] Guid workspaceId, [FromBody] Workspace workspace)
         {
@@ -1205,6 +1446,20 @@ namespace Teza.Controllers
                     var updatedWorkspace = _unitOfWork.WorkspaceRepository.UpdateEntity(workspaceToUpdate, workspace);
 
                     _unitOfWork.WorkspaceRepository.Update(updatedWorkspace);
+
+                    var activityHistory = new ActivityHistory
+                    {
+                        EntityName = workspace.Name,
+                        EntityType = EntityType.workspace,
+                        UserName = userEmail,
+                        ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                        Action = Data.Enums.Action.edited,
+                        WorkspaceId = workspaceId
+                    };
+
+                    _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                    workspace.ActivityHistories.Add(activityHistory);
+
                     await _unitOfWork.SaveChangesAsync();
 
                     return new SuccessModel
@@ -1229,7 +1484,6 @@ namespace Teza.Controllers
         }
 
         [HttpDelete("workspace/{workspaceId}")]
-        //[Authorize]
         [ServiceFilter(typeof(AuthorizationAttribute))]
         public async Task<ActionResult<object>> DeleteWorkspace([FromRoute] Guid workspaceId)
         {

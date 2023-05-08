@@ -21,6 +21,7 @@ namespace Data.Entities
         public string Documentation { get; set; }
         //public double? LastExecuteTime { get; set; }
 
+        public Guid? CronId { get; set; }
         public Guid? CollectionId { get; set; }
         public Guid? FolderId { get; set; }
         public Folder Folder { get; set; }

@@ -8,8 +8,11 @@ namespace Data.Enums
 {
     public enum Action
     {
-        Insert,
-        Delete,
-        Update
+        created,
+        removed,
+        edited,
+        renamed,
+        invited,
+        joined
     }
 }

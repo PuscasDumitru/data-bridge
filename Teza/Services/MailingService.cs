@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Data.Entities;
 using Data.Repositories.Implementation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Teza.Models;
@@ -16,17 +17,19 @@ namespace Teza.Services
     {
         private const int TOKEN_EXPIRY_TIME_IN_HOURS = 2;
         private readonly HttpClient _httpClient;
+        IConfiguration Configuration { get; }
 
-        public MailingService(HttpClient httpClient)
+        public MailingService(IConfiguration configuration, HttpClient httpClient)
         {
             _httpClient = httpClient;
+            Configuration = configuration;
         }
 
         public bool SendMail(string email, string workspaceName, Guid workspaceId, UserEmailConfirmationRepository userEmailConfirmationRepository)
         {
             try
             {
-                var link = "http://localhost:8081/api/confirm-email"; //"https://localhost:5001/api/confirm-email";
+                var link = Configuration["MainApi"];
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var tokenDescriptor = new SecurityTokenDescriptor

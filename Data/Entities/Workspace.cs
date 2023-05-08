@@ -15,6 +15,7 @@ namespace Data.Entities
         {
             this.Collections = new HashSet<Collection>();
             this.Collaborators = new HashSet<User>();
+            this.ActivityHistories = new HashSet<ActivityHistory>();
         }
 
         public Guid? Id { get; set; }
@@ -22,7 +23,6 @@ namespace Data.Entities
         public string Name { get; set; }
         public string DbConnectionString { get; set; }
         public string EnvVariables { get; set; }
-        public DbType? DbType { get; set; }
         //public string Documentation { get; set; }
         //public string DefaultConfigsForQueries { get; set; }
 
@@ -32,5 +32,6 @@ namespace Data.Entities
 
         public Guid? UserId { get; set; }
         public ICollection<User> Collaborators { get; set; }
+        public ICollection<ActivityHistory> ActivityHistories { get; set; }
     }
 }

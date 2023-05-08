@@ -10,6 +10,8 @@ namespace Data.Enums
     {
         collection,
         folder,
-        query
+        query,
+        workspace,
+        user
     }
 }
