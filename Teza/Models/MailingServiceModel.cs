@@ -2,7 +2,7 @@
 {
     public class MailingServiceModel
     {
-        public string ToEmail { get; set; }
+        public string ToEmails { get; set; }
         public string Subject { get; set; }
         public string Body { get; set; }
 

@@ -41,7 +41,7 @@ namespace Teza.Services
 
                 var mailToSend = new MailingServiceModel
                 {
-                    ToEmail = email,
+                    ToEmails = email,
                     Subject = "Invitation to join a workspace!",
                     Body =
                         $"Hello, you have been invited to join the workspace <b>{workspaceName}</b>. " +

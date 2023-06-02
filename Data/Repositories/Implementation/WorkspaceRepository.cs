@@ -16,9 +16,11 @@ namespace Data.Repositories.Implementation
         {
             return await GetByCondition(workspace => workspace.Id.Equals(workspaceId))
                 .Include(col => col.Collaborators)
+                .Include(hist => hist.ActivityHistories)
                 .Include(c => c.Collections)
                 .ThenInclude(f => f.Folders)
-                .ThenInclude(q => q.Queries)    
+                .ThenInclude(q => q.Queries)
+                .ThenInclude(x => x.CronJob) // add only for versions
                 .FirstOrDefaultAsync();
         }
 
@@ -26,9 +28,12 @@ namespace Data.Repositories.Implementation
         {
             return await GetByCondition(workspace => workspace.Collaborators.Any(user => user.Email == email))
                 .Include(col => col.Collaborators)
+                .Include(hist => hist.ActivityHistories)
                 .Include(c => c.Collections)
                 .ThenInclude(f => f.Folders)
                 .ThenInclude(q => q.Queries)
+                .ThenInclude(x => x.CronJob)
+                // add only for versions
                 .ToListAsync();
 
         }

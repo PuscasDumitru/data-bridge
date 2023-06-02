@@ -69,6 +69,29 @@ namespace Teza.Migrations
                     b.ToTable("Collection");
                 });
 
+            modelBuilder.Entity("Data.Entities.CronJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CronExpresion")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmailList")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("QueryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QueryId")
+                        .IsUnique();
+
+                    b.ToTable("CronJob");
+                });
+
             modelBuilder.Entity("Data.Entities.Folder", b =>
                 {
                     b.Property<Guid?>("Id")
@@ -100,9 +123,6 @@ namespace Teza.Migrations
                     b.Property<int?>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("CronId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Documentation")
                         .HasColumnType("text");
 
@@ -126,6 +146,28 @@ namespace Teza.Migrations
                     b.HasIndex("FolderId");
 
                     b.ToTable("Query");
+                });
+
+            modelBuilder.Entity("Data.Entities.QueryVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("QueryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RawSql")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Version")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QueryId");
+
+                    b.ToTable("QueryVersions");
                 });
 
             modelBuilder.Entity("Data.Entities.User", b =>
@@ -182,14 +224,11 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("DataBaseType")
+                    b.Property<int>("DataBaseType")
                         .HasColumnType("integer");
 
                     b.Property<string>("DbConnectionString")
                         .HasColumnType("text");
-
-                    b.Property<int?>("DbType")
-                        .HasColumnType("integer");
 
                     b.Property<string>("EnvVariables")
                         .HasColumnType("text");
@@ -223,6 +262,17 @@ namespace Teza.Migrations
                     b.Navigation("Workspace");
                 });
 
+            modelBuilder.Entity("Data.Entities.CronJob", b =>
+                {
+                    b.HasOne("Data.Entities.Query", "QueryEx")
+                        .WithOne("CronJob")
+                        .HasForeignKey("Data.Entities.CronJob", "QueryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QueryEx");
+                });
+
             modelBuilder.Entity("Data.Entities.Folder", b =>
                 {
                     b.HasOne("Data.Entities.Collection", "Collection")
@@ -239,6 +289,17 @@ namespace Teza.Migrations
                         .HasForeignKey("FolderId");
 
                     b.Navigation("Folder");
+                });
+
+            modelBuilder.Entity("Data.Entities.QueryVersion", b =>
+                {
+                    b.HasOne("Data.Entities.Query", "Query")
+                        .WithMany("QueryVersions")
+                        .HasForeignKey("QueryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Query");
                 });
 
             modelBuilder.Entity("Data.Entities.User", b =>
@@ -258,6 +319,13 @@ namespace Teza.Migrations
             modelBuilder.Entity("Data.Entities.Folder", b =>
                 {
                     b.Navigation("Queries");
+                });
+
+            modelBuilder.Entity("Data.Entities.Query", b =>
+                {
+                    b.Navigation("CronJob");
+
+                    b.Navigation("QueryVersions");
                 });
 
             modelBuilder.Entity("Data.Entities.Workspace", b =>

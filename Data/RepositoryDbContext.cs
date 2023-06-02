@@ -9,27 +9,28 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Data
 {
-    public class RepositoryDbContext : DbContext
-    {
-        public RepositoryDbContext() { }
-        public RepositoryDbContext(DbContextOptions options) : base(options) { }
+     public class RepositoryDbContext : DbContext
+     {
+          public RepositoryDbContext() { }
+          public RepositoryDbContext(DbContextOptions options) : base(options) { }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder
-               .Entity<Workspace>()
-               .Property(e => e.Id);
-            
-            modelBuilder.HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
-        }
+          protected override void OnModelCreating(ModelBuilder modelBuilder)
+          {
+               modelBuilder
+                  .Entity<Workspace>()
+                  .Property(e => e.Id);
 
-        public DbSet<Collection> Collection { get; set; }
-        public DbSet<Folder> Folder { get; set; }
-        public DbSet<Query> Query { get; set; }
-        public DbSet<Workspace> Workspace { get; set; }
-        public DbSet<ActivityHistory> ActivityHistory { get; set; }
-        public DbSet<User> User { get; set; }
-        public DbSet<UserEmailConfirmation> UserEmailConfirmation { get; set; }
+               modelBuilder.HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+          }
 
-    }
+          public DbSet<Collection> Collection { get; set; }
+          public DbSet<Folder> Folder { get; set; }
+          public DbSet<Query> Query { get; set; }
+          public DbSet<Workspace> Workspace { get; set; }
+          public DbSet<ActivityHistory> ActivityHistory { get; set; }
+          public DbSet<QueryVersion> QueryVersions { get; set; }
+          public DbSet<User> User { get; set; }
+          public DbSet<UserEmailConfirmation> UserEmailConfirmation { get; set; }
+
+     }
 }

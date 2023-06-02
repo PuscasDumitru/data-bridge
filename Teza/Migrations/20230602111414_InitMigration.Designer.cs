@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    [Migration("20230503081000_AddDbTypeForWorkspace")]
-    partial class AddDbTypeForWorkspace
+    [Migration("20230602111414_InitMigration")]
+    partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,37 @@ namespace Teza.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+
+            modelBuilder.Entity("Data.Entities.ActivityHistory", b =>
+                {
+                    b.Property<Guid?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ActionPerformedTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("ActivityHistory");
+                });
 
             modelBuilder.Entity("Data.Entities.Collection", b =>
                 {
@@ -40,6 +71,29 @@ namespace Teza.Migrations
                     b.ToTable("Collection");
                 });
 
+            modelBuilder.Entity("Data.Entities.CronJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CronExpresion")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmailList")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("QueryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QueryId")
+                        .IsUnique();
+
+                    b.ToTable("CronJob");
+                });
+
             modelBuilder.Entity("Data.Entities.Folder", b =>
                 {
                     b.Property<Guid?>("Id")
@@ -57,17 +111,6 @@ namespace Teza.Migrations
                     b.HasIndex("CollectionId");
 
                     b.ToTable("Folder");
-                });
-
-            modelBuilder.Entity("Data.Entities.History", b =>
-                {
-                    b.Property<Guid?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("History");
                 });
 
             modelBuilder.Entity("Data.Entities.Query", b =>
@@ -105,6 +148,28 @@ namespace Teza.Migrations
                     b.HasIndex("FolderId");
 
                     b.ToTable("Query");
+                });
+
+            modelBuilder.Entity("Data.Entities.QueryVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("QueryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RawSql")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Version")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QueryId");
+
+                    b.ToTable("QueryVersions");
                 });
 
             modelBuilder.Entity("Data.Entities.User", b =>
@@ -161,11 +226,11 @@ namespace Teza.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("DataBaseType")
+                        .HasColumnType("integer");
+
                     b.Property<string>("DbConnectionString")
                         .HasColumnType("text");
-
-                    b.Property<int?>("DbType")
-                        .HasColumnType("integer");
 
                     b.Property<string>("EnvVariables")
                         .HasColumnType("text");
@@ -181,6 +246,15 @@ namespace Teza.Migrations
                     b.ToTable("Workspace");
                 });
 
+            modelBuilder.Entity("Data.Entities.ActivityHistory", b =>
+                {
+                    b.HasOne("Data.Entities.Workspace", "Workspace")
+                        .WithMany("ActivityHistories")
+                        .HasForeignKey("WorkspaceId");
+
+                    b.Navigation("Workspace");
+                });
+
             modelBuilder.Entity("Data.Entities.Collection", b =>
                 {
                     b.HasOne("Data.Entities.Workspace", "Workspace")
@@ -188,6 +262,17 @@ namespace Teza.Migrations
                         .HasForeignKey("WorkspaceId");
 
                     b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("Data.Entities.CronJob", b =>
+                {
+                    b.HasOne("Data.Entities.Query", "QueryEx")
+                        .WithOne("CronJob")
+                        .HasForeignKey("Data.Entities.CronJob", "QueryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QueryEx");
                 });
 
             modelBuilder.Entity("Data.Entities.Folder", b =>
@@ -206,6 +291,17 @@ namespace Teza.Migrations
                         .HasForeignKey("FolderId");
 
                     b.Navigation("Folder");
+                });
+
+            modelBuilder.Entity("Data.Entities.QueryVersion", b =>
+                {
+                    b.HasOne("Data.Entities.Query", "Query")
+                        .WithMany("QueryVersions")
+                        .HasForeignKey("QueryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Query");
                 });
 
             modelBuilder.Entity("Data.Entities.User", b =>
@@ -227,8 +323,17 @@ namespace Teza.Migrations
                     b.Navigation("Queries");
                 });
 
+            modelBuilder.Entity("Data.Entities.Query", b =>
+                {
+                    b.Navigation("CronJob");
+
+                    b.Navigation("QueryVersions");
+                });
+
             modelBuilder.Entity("Data.Entities.Workspace", b =>
                 {
+                    b.Navigation("ActivityHistories");
+
                     b.Navigation("Collaborators");
 
                     b.Navigation("Collections");

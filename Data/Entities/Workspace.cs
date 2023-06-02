@@ -28,6 +28,7 @@ namespace Data.Entities
 
         //public int? UsersLimit { get; set; }
         //public string InviteLink { get; set; }
+        public int DataBaseType { get; set; }
         public ICollection<Collection> Collections { get; set; }
 
         public Guid? UserId { get; set; }

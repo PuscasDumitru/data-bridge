@@ -13,6 +13,7 @@ namespace Data.Repositories.Interfaces
     {
         IGenericRepository<Collection> CollectionRepository { get; }
         IGenericRepository<Folder> FolderRepository { get; }
+        IGenericRepository<CronJob> CronRepository { get; }
         IGenericRepository<ActivityHistory> ActivityHistoryRepository { get; }
         QueryRepository QueryRepository { get; }
         WorkspaceRepository WorkspaceRepository { get; }

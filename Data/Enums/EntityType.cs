@@ -12,6 +12,6 @@ namespace Data.Enums
         folder,
         query,
         workspace,
-        user
+        collaborator
     }
 }
