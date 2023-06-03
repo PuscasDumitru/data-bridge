@@ -24,6 +24,9 @@ using Teza.Extensions;
 using Teza.Filters;
 using Teza.Services;
 using System.Linq.Expressions;
+using System.Data;
+using Microsoft.CodeAnalysis;
+using Workspace = Data.Entities.Workspace;
 
 namespace Teza.Controllers
 {
@@ -1235,11 +1238,11 @@ namespace Teza.Controllers
 
           [HttpPost("setupcron")]
           [ServiceFilter(typeof(AuthorizationAttribute))]
-          public async Task<ActionResult<object>> SetUpCron(string connectionString, int dbType, string emailList, string cronExpresion, Guid queryId)
+          public async Task<ActionResult<object>> SetUpCron([FromBody] CronParamsModel cronParams)
           {
                try
                {
-                    var queryEx = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
+                    var queryEx = await _unitOfWork.QueryRepository.GetQueryByIdAsync(cronParams.QueryId);
 
                     if (queryEx == null)
                     {
@@ -1250,7 +1253,7 @@ namespace Teza.Controllers
                          };
                     }
 
-                    var cronId = _cronService.SetUpCron(connectionString, dbType, emailList, cronExpresion, queryId);
+                    var cronId = _cronService.SetUpCron(cronParams);
 
                     if (string.IsNullOrEmpty(cronId))
                     {
@@ -1264,9 +1267,9 @@ namespace Teza.Controllers
                     var cronJob = new CronJob
                     {
                          Id = new Guid(cronId),
-                         EmailList = emailList,
-                         CronExpresion = cronExpresion,
-                         QueryId = queryId
+                         EmailList = cronParams.EmailList,
+                         CronExpresion = cronParams.CronExpression,
+                         QueryId = cronParams.QueryId
                     };
 
                     queryEx.CronJob = cronJob;
@@ -1306,7 +1309,7 @@ namespace Teza.Controllers
 
                     var cronIsDeleted = _cronService.StopCron(cronId);
 
-                    if(!cronIsDeleted)
+                    if (!cronIsDeleted)
                     {
                          return new ErrorModel()
                          {
@@ -1331,9 +1334,9 @@ namespace Teza.Controllers
                }
           }
 
-          [HttpPost("query/{queryId}")]
+          [HttpPost("saveVersion/workspace/{workspaceId}/query/{queryId}")]
           [ServiceFilter(typeof(AuthorizationAttribute))]
-          public async Task<ActionResult<object>> SaveQueryVersion([FromRoute] Guid workspaceId, [FromRoute] Guid queryId, [FromBody] Query query)
+          public async Task<ActionResult<object>> SaveQueryVersion([FromRoute] Guid workspaceId, [FromRoute] Guid queryId, [FromBody] CreateQueryVersion newVersion)
           {
                try
                {
@@ -1361,60 +1364,36 @@ namespace Teza.Controllers
                               };
                          }
 
-                         var collectionFolder =
-                             workspace.Collections.FirstOrDefault(col => col.Id == query.CollectionId);
+                         var query = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
 
-                         if (collectionFolder is null)
+                         if (query == null)
                          {
-                              return new ErrorModel
+                              return new ErrorModel()
                               {
-                                   error = "There's no collection with such an ID",
-                                   success = false
+                                   success = false,
+                                   error = "There's no query with such an ID."
                               };
                          }
 
-                         var folderContainingThisQuery =
-                             collectionFolder.Folders.FirstOrDefault(fol => fol.Id == query.FolderId);
-
-                         if (folderContainingThisQuery is null)
+                         var qryVersion = new QueryVersion
                          {
-                              return new ErrorModel
-                              {
-                                   error = "There's no folder with such an ID",
-                                   success = false
-                              };
-                         }
+                              RawSql = newVersion.RawSql,
+                              Version = _unitOfWork.QueryVersionRepository.ExistsQueryVersionsForQueryId(queryId)
+                                   ? _unitOfWork.QueryVersionRepository.GetVersionForNewQueryVersion(queryId)
+                                    : "0.1",
+                              QueryId = queryId,
+                         };
 
-                         var existingQuery = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
-
-                         if (existingQuery is null)
-                         {
-                              return new ErrorModel
-                              {
-                                   error = "There's no query with such an ID",
-                                   success = false
-                              };
-                         }
-
-                         if (!IsQueryUnique(folderContainingThisQuery, query.Name, queryId))
-                         {
-                              return new ErrorModel
-                              {
-                                   error = "There's already a query with such a name in this folder.",
-                                   success = false
-                              };
-                         }
-
-                         var updatedQuery = _unitOfWork.QueryRepository.UpdateEntity(existingQuery, query);
-                         _unitOfWork.QueryRepository.Update(updatedQuery);
+                         _unitOfWork.QueryVersionRepository.Create(qryVersion);
+                         query.QueryVersions.Add(qryVersion);
 
                          var activityHistory = new ActivityHistory
                          {
-                              EntityName = query.Name,
-                              EntityType = EntityType.query,
+                              EntityName = qryVersion.Version,
+                              EntityType = EntityType.queryVersion,
                               UserName = userEmail,
                               ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
-                              Action = Data.Enums.Action.edited,
+                              Action = Data.Enums.Action.created,
                               WorkspaceId = workspaceId
                          };
 
@@ -1425,8 +1404,7 @@ namespace Teza.Controllers
 
                          return new SuccessModel
                          {
-                              data = updatedQuery,
-                              message = "Query updated",
+                              message = $"Query version {qryVersion.Version} created for the query {query.Name}.",
                               success = true
                          };
                     }
@@ -1436,6 +1414,96 @@ namespace Teza.Controllers
                          success = false,
                          error = "Claim userId missing"
                     };
+               }
+               catch (Exception e)
+               {
+                    return ExceptionHandlerExtension.HandleException(e);
+               }
+          }
+
+          [HttpPatch("applyQueryVersion/workspace/{workspaceId}/query/{queryId}/version/{version}")]
+          [ServiceFilter(typeof(AuthorizationAttribute))]
+          public async Task<ActionResult<object>> ApplyQueryVersion([FromRoute] Guid workspaceId, [FromRoute] Guid queryId, [FromRoute] string version)
+          {
+               try
+               {
+                    if (HttpContext.User.Identity is ClaimsIdentity identity)
+                    {
+                         var userEmail = identity.FindFirst("userEmail").Value;
+
+                         var workspace = await _unitOfWork.WorkspaceRepository.GetWorkspaceByIdAsync(workspaceId);
+
+                         if (workspace is null)
+                         {
+                              return new ErrorModel
+                              {
+                                   error = "There's no workspace with such an ID",
+                                   success = false
+                              };
+                         }
+
+                         if (!UserExistsInWorkspace(workspace, userEmail))
+                         {
+                              return new ErrorModel()
+                              {
+                                   success = false,
+                                   error = "The logged user is not a part of this workspace."
+                              };
+                         }
+
+                         var query = await _unitOfWork.QueryRepository.GetQueryByIdAsync(queryId);
+
+                         if (query == null)
+                         {
+                              return new ErrorModel()
+                              {
+                                   success = false,
+                                   error = "There's no query with such an ID."
+                              };
+                         }
+
+                         var queryVersion = await _unitOfWork.QueryVersionRepository.GetQueryVersionByVersionAsync(version, queryId);
+
+                         if (queryVersion == null)
+                         {
+                              return new ErrorModel()
+                              {
+                                   success = false,
+                                   error = "There's no such version for this query."
+                              };
+                         }
+
+                         query.RawSql = queryVersion.RawSql;
+
+                         _unitOfWork.QueryRepository.Update(query);
+
+                         var activityHistory = new ActivityHistory
+                         {
+                              EntityName = queryVersion.Version,
+                              EntityType = EntityType.queryVersion,
+                              UserName = userEmail,
+                              ActionPerformedTime = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(),
+                              Action = Data.Enums.Action.applied,
+                              WorkspaceId = workspaceId
+                         };
+
+                         _unitOfWork.ActivityHistoryRepository.Create(activityHistory);
+                         workspace.ActivityHistories.Add(activityHistory);
+
+                         await _unitOfWork.SaveChangesAsync();
+
+                         return new SuccessModel
+                         {
+                              message = $"Query {query.Name} has been updated to version {queryVersion.Version}",
+                              success = true
+                         };
+                    }
+                    return new ErrorModel()
+                    {
+                         success = false,
+                         error = "Claim userId missing"
+                    };
+
                }
                catch (Exception e)
                {
@@ -1827,11 +1895,11 @@ namespace Teza.Controllers
           {
                var userWorkspaces = await _unitOfWork.WorkspaceRepository.GetWorkspacesByEmailAsync(userEmail);
 
-               if (userWorkspaces.Any(workspace => workspace.UserId == userId &&
-                                                   workspace.Name == updatedWorkspace.Name && workspace.Id != updatedWorkspace.Id))
-               {
-                    return false;
-               }
+               //if (userWorkspaces.Any(workspace => workspace.UserId == userId &&
+               //                                    workspace.Name == updatedWorkspace.Name && workspace.Id != updatedWorkspace.Id))
+               //{
+               //     return false;
+               //}
 
                return true;
           }

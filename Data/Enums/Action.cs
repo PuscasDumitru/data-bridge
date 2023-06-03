@@ -13,6 +13,7 @@ namespace Data.Enums
         edited,
         renamed,
         invited,
-        joined
+        joined,
+        applied
     }
 }

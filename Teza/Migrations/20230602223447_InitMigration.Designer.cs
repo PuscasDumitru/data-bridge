@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Teza.Migrations
 {
     [DbContext(typeof(RepositoryDbContext))]
-    [Migration("20230602111414_InitMigration")]
+    [Migration("20230602223447_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -17,6 +17,7 @@ namespace Data.Repositories.Implementation
           GenericRepository<CronJob> _cronRepository;
           GenericRepository<ActivityHistory> _activityHistoryRepository;
           QueryRepository _queryRepository;
+          QueryVersionRepository _queryVersionRepository;
           UserRepository _userRepository;
           WorkspaceRepository _workspaceRepository;
           UserEmailConfirmationRepository _userEmailConfirmationRepository;
@@ -56,6 +57,15 @@ namespace Data.Repositories.Implementation
                {
                     _queryRepository ??= new QueryRepository(_dbContext);
                     return _queryRepository;
+               }
+          }
+
+          public QueryVersionRepository QueryVersionRepository
+          {
+               get
+               {
+                    _queryVersionRepository ??= new QueryVersionRepository(_dbContext);
+                    return _queryVersionRepository;
                }
           }
 

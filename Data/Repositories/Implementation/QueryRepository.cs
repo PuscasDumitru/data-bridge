@@ -15,8 +15,8 @@ namespace Data.Repositories.Implementation
           public async Task<Query> GetQueryByIdAsync(Guid queryId)
           {
                return await GetByCondition(qry => qry.Id.Equals(queryId))
-                       .Include(x => x.CronJob)
-                   .FirstOrDefaultAsync();
+                    .Include(x => x.CronJob)
+                    .FirstOrDefaultAsync();
           }
 
           public async Task<IEnumerable<Query>> GetAllQueriesAsync()

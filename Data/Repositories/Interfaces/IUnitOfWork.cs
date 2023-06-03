@@ -16,6 +16,7 @@ namespace Data.Repositories.Interfaces
         IGenericRepository<CronJob> CronRepository { get; }
         IGenericRepository<ActivityHistory> ActivityHistoryRepository { get; }
         QueryRepository QueryRepository { get; }
+        QueryVersionRepository QueryVersionRepository { get; }
         WorkspaceRepository WorkspaceRepository { get; }
         UserRepository UserRepository { get; }
         UserEmailConfirmationRepository UserEmailConfirmationRepository { get; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Data.DTOs;
+using System;
 using System.Threading.Tasks;
 using Teza.Models;
 
@@ -6,7 +7,7 @@ namespace Teza.Services
 {
      public interface ICronService
      {
-          string SetUpCron(string connectionString, int dbType, string emailList, string cronExpresion, Guid queryId);
+          string SetUpCron(CronParamsModel cronParams);
           bool StopCron(Guid cronId);
      }
 }

@@ -12,6 +12,7 @@ namespace Data.Enums
         folder,
         query,
         workspace,
-        collaborator
+        collaborator,
+        queryVersion
     }
 }

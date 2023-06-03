@@ -10,6 +10,7 @@ using Teza.Models;
 using Microsoft.Extensions.Configuration;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Data;
+using Data.DTOs;
 
 namespace Teza.Services
 {
@@ -24,12 +25,12 @@ namespace Teza.Services
                Configuration = configuration;
           }
 
-          public string SetUpCron(string connectionString, int dbType, string emailList, string cronExpresion, Guid queryId)
+          public string SetUpCron(CronParamsModel cronParams)
           {
                try
                {
-                    var link = Configuration["CronService"] + $"SetupCron?ConnectionString={connectionString}&DbType={dbType}&EmailList={emailList}" +
-                         $"&CronExpresion={cronExpresion}&QueryId={queryId}";
+                    var link = Configuration["CronService"] + $"SetupCron?ConnectionString={cronParams.ConnectionString}&DbType={cronParams.DbType}&EmailList={cronParams.EmailList}" +
+                         $"&CronExpresion={cronParams.CronExpression}&QueryId={cronParams.QueryId}";
 
                     var payload = new StringContent("", Encoding.UTF8, "application/json");
                     var response = _httpClient.PostAsync(link, payload).Result;
