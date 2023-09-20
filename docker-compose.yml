@@ -1,32 +1,93 @@
-version: '3.4'
-
-networks:
-    teza-dev:
-        driver: bridge
+version: "3"
 
 services:
-    teza:
-        image: teza:latest
-        depends_on:
-            - "postgres_image"
-        build:
-            context: .
-            dockerfile: Dockerfile
-        ports:
-            - "8081:80"
-        #environment:
-        networks:
-            - teza-dev
+  #Phoenix Gateway (WS API - Channels & REST API)
+  phoenix_gateway:
+    container_name: phoenix_gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - '9999:9999'
+    environment:
+      # will load config from `gateway/config/prod.exs`
+      MIX_ENV: prod
+    depends_on:
+      - ms-sql-server
+      - auth_service
+      - main_api
+      - postgres_image
 
-    postgres_image:
-        image: postgres:latest
-        ports:
-            - "5432"
-        restart: always
-        environment:
-            POSTGRES_USER: "postgres"
-            POSTGRES_PASSWORD: "191993acces"
-            POSTGRES_DB: "MainDb"
-        networks:
-            - teza-dev
+  # Client Application
+  react_client:
+    container_name: react_client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - phoenix_gateway
+      
+  # Cron Service API
+  cron-service:
+    container_name:  cron_service
+    image: nicolaedockerid/cronservice
+    ports:
+      - '8084:80'
 
+  # Mailing Service API
+  mailing-service:
+    container_name: mailing_service
+    image: nicolaedockerid/mailingservice
+    ports:
+      - '8083:80'
+
+  # Connector Service API
+  connector-service:
+    container_name: connector_service
+    image: nicolaedockerid/connectorservice
+    ports:
+      - '8082:80'
+
+  # Auth Service API
+  auth_service:
+    container_name: auth_service
+    image: nicolaedockerid/authservice
+    ports:
+      - '8080:80'
+    depends_on:
+      - ms-sql-server
+
+  # MSSQL instance (for Auth Service)
+  ms-sql-server:
+    container_name: ms-sql-server
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "aDMIN123*"
+      MSSQL_PID: EXPRESS
+    ports:
+      - '1433:1433'
+
+  # Main API
+  main_api:
+    container_name: main_api
+    image: dpuscas/teza-fuf
+    ports:
+      - '8081:80'
+    depends_on:
+      - postgres_image
+
+  # Postgres instance (for Main API)
+  postgres_image:
+    container_name: main_api_postgres
+    image: postgres:latest
+    ports:
+      - '5432'
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "191993acces"
+      POSTGRES_DB: "MainDb"
+    
